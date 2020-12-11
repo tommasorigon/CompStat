@@ -1,0 +1,5 @@
+
+*.Rproj
+data/.DS_Store
+exe/.DS_Store
+*.Rmd
