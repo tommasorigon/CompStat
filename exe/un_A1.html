@@ -1664,7 +1664,7 @@ DEMS<br>
 <h2>The <code>hearth</code> dataset</h2>
 <p>Let us load the <code>stanford2</code> dataset which is available in the <code>survival</code> library. From the documentation: <em>“Survival of patients on the waiting list for the Stanford heart transplant program.”</em></p>
 <p>The survival times are stored in the <code>time</code> variable which is either <strong>complete</strong> (<code>status = 1</code>) or <strong>censored</strong> (<code>status = 0</code>).</p>
-<p>Let <span class="math inline">\(\textbf{t} = (t_1,\dots,t_n)\)</span> be the observed survival times and <span class="math inline">\(\textbf{d} = (d_1,\dots,d_n)\)</span> be the corresponding binary vector of censorship statuses. We load in <strong>R</strong> this quantities as follows, together with the Kaplan-Meier survival function.</p>
+<p>Let <span class="math inline">\(\textbf{t} = (t_1,\dots,t_n)\)</span> be the observed survival times and <span class="math inline">\(\textbf{d} = (d_1,\dots,d_n)\)</span> be the corresponding binary vector of censorship statuses. We load in <strong>R</strong> this quantities as follows, together with the <strong>Kaplan-Meier</strong> survival function.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(survival)</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="kw">data</span>(stanford2)</span>
 <span id="cb1-3"><a href="#cb1-3"></a>t &lt;-<span class="st"> </span>stanford2<span class="op">$</span>time</span>
@@ -1734,12 +1734,13 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\alpha, \bet
 <span id="cb5-13"><a href="#cb5-13"></a>    <span class="cf">if</span> (<span class="kw">runif</span>(<span class="dv">1</span>) <span class="op">&lt;</span><span class="st"> </span>alpha) {</span>
 <span id="cb5-14"><a href="#cb5-14"></a>      theta &lt;-<span class="st"> </span>theta_new <span class="co"># Accept the value</span></span>
 <span id="cb5-15"><a href="#cb5-15"></a>    }</span>
-<span id="cb5-16"><a href="#cb5-16"></a>    <span class="cf">if</span> (r <span class="op">&gt;</span><span class="st"> </span>burn_in) {</span>
-<span id="cb5-17"><a href="#cb5-17"></a>      out[r <span class="op">-</span><span class="st"> </span>burn_in, ] &lt;-<span class="st"> </span>theta</span>
-<span id="cb5-18"><a href="#cb5-18"></a>    }</span>
-<span id="cb5-19"><a href="#cb5-19"></a>  }</span>
-<span id="cb5-20"><a href="#cb5-20"></a>  out</span>
-<span id="cb5-21"><a href="#cb5-21"></a>}</span></code></pre></div>
+<span id="cb5-16"><a href="#cb5-16"></a>    <span class="co"># Store the values after the burn-in period</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a>    <span class="cf">if</span> (r <span class="op">&gt;</span><span class="st"> </span>burn_in) {</span>
+<span id="cb5-18"><a href="#cb5-18"></a>      out[r <span class="op">-</span><span class="st"> </span>burn_in, ] &lt;-<span class="st"> </span>theta</span>
+<span id="cb5-19"><a href="#cb5-19"></a>    }</span>
+<span id="cb5-20"><a href="#cb5-20"></a>  }</span>
+<span id="cb5-21"><a href="#cb5-21"></a>  out</span>
+<span id="cb5-22"><a href="#cb5-22"></a>}</span></code></pre></div>
 <p>We can now run the algorithm. We choose <code>R = 50000</code> and <code>burn_in = 5000</code>.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>R &lt;-<span class="st"> </span><span class="dv">50000</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a>burn_in &lt;-<span class="st"> </span><span class="dv">5000</span></span></code></pre></div>
@@ -1749,7 +1750,7 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\alpha, \bet
 <span id="cb7-4"><a href="#cb7-4"></a><span class="kw">tic</span>()</span>
 <span id="cb7-5"><a href="#cb7-5"></a>fit_MCMC &lt;-<span class="st"> </span><span class="kw">RMH</span>(R, burn_in, t, d)</span>
 <span id="cb7-6"><a href="#cb7-6"></a><span class="kw">toc</span>()</span>
-<span id="cb7-7"><a href="#cb7-7"></a><span class="fl">2.105</span> sec elapsed</span></code></pre></div>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="fl">2.138</span> sec elapsed</span></code></pre></div>
 </div>
 <div id="analysis-of-the-results" class="section level2">
 <h2>Analysis of the results</h2>
