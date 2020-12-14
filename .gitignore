@@ -3,3 +3,12 @@
 data/.DS_Store
 exe/.DS_Store
 *.Rmd
+.Rproj.user
+.Rhistory
+.DS_Store
+slides/.DS_Store
+exe/un_A1_cache/html/__packages
+*.RData
+*.rdb
+*.rdx
+*.png
