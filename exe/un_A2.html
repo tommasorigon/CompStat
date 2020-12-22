@@ -1660,27 +1660,39 @@ DEMS<br>
 </div>
 
 
-<div id="installation-of-rcpp-and-rcpparmadillo" class="section level2">
-<h2>Installation of Rcpp and RcppArmadillo</h2>
-<p>A user-friendly guide to <code>Rcpp</code> is available at the website: <a href="https://teuder.github.io/rcpp4everyone_en/">Rcpp for everyone</a>.</p>
-<p>The <strong>R</strong> packages <code>Rcpp</code> and <code>RcppArmadillo</code> must be installed in the usual manner. However, additional steps are required as you need to install a C++ compiler. You can refer for example to this <a href="https://teuder.github.io/rcpp4everyone_en/020_install.html#install-c-compiler">installation page</a>. The specific</p>
+<div id="rcpp-and-rcpparmadillo" class="section level2">
+<h2>Rcpp and RcppArmadillo</h2>
+<p>The <code>Rcpp</code> <strong>R</strong> package extends <strong>R</strong> functionalities with C++ code. The official website of <code>Rcpp</code> is <a href="http://www.rcpp.org">http://www.rcpp.org</a>.</p>
+<div id="installation" class="section level3">
+<h3>Installation</h3>
+<p>The <strong>R</strong> packages <code>Rcpp</code> and <code>RcppArmadillo</code> can be installed in the usual manner, i.e. using <code>install.packages(&quot;Rcpp&quot;)</code>. However, additional steps are required as you also need a C++ compiler. You can refer for example to this <a href="https://teuder.github.io/rcpp4everyone_en/020_install.html#install-rcpp">installation guide</a> for detailed instructions.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(Rcpp)</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(RcppArmadillo)</span></code></pre></div>
-<div id="checking-the-installation" class="section level3">
-<h3>Checking the installation</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1"></a><span class="pp">#include </span><span class="im">&lt;Rcpp.h&gt;</span><span class="pp"> </span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">using</span> <span class="kw">namespace</span> Rcpp;</span>
+</div>
+<div id="the-first-function-in-rcpp" class="section level3">
+<h3>The first function in <code>Rcpp</code></h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1"></a><span class="pp">#include </span><span class="im">&lt;Rcpp.h&gt;</span><span class="pp"> </span><span class="co">// Import the Rcpp library</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">using</span> <span class="kw">namespace</span> Rcpp; </span>
 <span id="cb2-3"><a href="#cb2-3"></a></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co">// [[Rcpp::export]]</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="dt">int</span> addition(<span class="dt">int</span> a, <span class="dt">int</span> b) { </span>
-<span id="cb2-6"><a href="#cb2-6"></a>  <span class="cf">return</span> a + b;</span>
-<span id="cb2-7"><a href="#cb2-7"></a>}</span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">addition</span>(<span class="dv">4</span>, <span class="dv">5</span>)</span>
-<span id="cb3-2"><a href="#cb3-2"></a>[<span class="dv">1</span>] <span class="dv">9</span></span></code></pre></div>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co">// [[Rcpp::export]] </span></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="dt">double</span> rcpp_sum(NumericVector v){</span>
+<span id="cb2-6"><a href="#cb2-6"></a>    <span class="dt">double</span> sum = <span class="dv">0</span>;</span>
+<span id="cb2-7"><a href="#cb2-7"></a>    <span class="dt">int</span> n = v.length();</span>
+<span id="cb2-8"><a href="#cb2-8"></a>    <span class="cf">for</span>(<span class="dt">int</span> i=<span class="dv">0</span>; i &lt; n; i++){</span>
+<span id="cb2-9"><a href="#cb2-9"></a>        sum += v[i];</span>
+<span id="cb2-10"><a href="#cb2-10"></a>    }</span>
+<span id="cb2-11"><a href="#cb2-11"></a>    <span class="cf">return</span>(sum);</span>
+<span id="cb2-12"><a href="#cb2-12"></a>}</span></code></pre></div>
+<p>We can finally test the <code>rcpp_sum</code> function and compare it with the <strong>R</strong> implementation.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">5</span>, <span class="dv">30</span>, <span class="dv">21</span>, <span class="dv">78</span>, pi, <span class="kw">exp</span>(<span class="dv">7</span>))</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">rcpp_sum</span>(x) <span class="co"># Sum of the vector x</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>[<span class="dv">1</span>] <span class="fl">1263.775</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">sum</span>(x) <span class="co"># Equivalent R command</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>[<span class="dv">1</span>] <span class="fl">1263.775</span></span></code></pre></div>
 </div>
 </div>
-<div id="the-syntax-of-rcpp-and-rcpparmadillo" class="section level2">
-<h2>The syntax of <code>Rcpp</code> and <code>RcppArmadillo</code></h2>
+<div id="basic-examples" class="section level2">
+<h2>Basic examples</h2>
 <div id="example-1-rnorm" class="section level3">
 <h3>Example 1: <code>rnorm</code></h3>
 <div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1"></a><span class="pp">#include </span><span class="im">&lt;Rcpp.h&gt;</span><span class="pp"> </span><span class="co">// Rcpp library</span></span>
@@ -1720,14 +1732,14 @@ DEMS<br>
 <td align="left">2</td>
 <td align="left">R</td>
 <td align="right">1000</td>
-<td align="right">0.573</td>
-<td align="right">1.358</td>
+<td align="right">0.63</td>
+<td align="right">1.105</td>
 </tr>
 <tr class="even">
 <td align="left">1</td>
 <td align="left">Rcpp</td>
 <td align="right">1000</td>
-<td align="right">0.422</td>
+<td align="right">0.57</td>
 <td align="right">1.000</td>
 </tr>
 </tbody>
@@ -1784,15 +1796,15 @@ DEMS<br>
 <td align="left">4</td>
 <td align="left">lm</td>
 <td align="right">1000</td>
-<td align="right">3.189</td>
-<td align="right">31.265</td>
+<td align="right">3.796</td>
+<td align="right">37.216</td>
 </tr>
 <tr class="even">
 <td align="left">1</td>
 <td align="left">lm_coef1(X, y)</td>
 <td align="right">1000</td>
-<td align="right">0.638</td>
-<td align="right">6.255</td>
+<td align="right">0.634</td>
+<td align="right">6.216</td>
 </tr>
 <tr class="odd">
 <td align="left">2</td>
@@ -1805,8 +1817,8 @@ DEMS<br>
 <td align="left">3</td>
 <td align="left">Rcpp</td>
 <td align="right">1000</td>
-<td align="right">0.126</td>
-<td align="right">1.235</td>
+<td align="right">0.141</td>
+<td align="right">1.382</td>
 </tr>
 </tbody>
 </table>
