@@ -1662,11 +1662,12 @@ DEMS<br>
 
 <div id="installation-of-rcpp-and-rcpparmadillo" class="section level2">
 <h2>Installation of Rcpp and RcppArmadillo</h2>
+<p>A user-friendly guide to <code>Rcpp</code> is available at the website: <a href="https://teuder.github.io/rcpp4everyone_en/">Rcpp for everyone</a>.</p>
+<p>The <strong>R</strong> packages <code>Rcpp</code> and <code>RcppArmadillo</code> must be installed in the usual manner. However, additional steps are required as you need to install a C++ compiler. You can refer for example to this <a href="https://teuder.github.io/rcpp4everyone_en/020_install.html#install-c-compiler">installation page</a>. The specific</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(Rcpp)</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(RcppArmadillo)</span></code></pre></div>
-</div>
-<div id="checking-the-installation" class="section level2">
-<h2>Checking the installation</h2>
+<div id="checking-the-installation" class="section level3">
+<h3>Checking the installation</h3>
 <div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1"></a><span class="pp">#include </span><span class="im">&lt;Rcpp.h&gt;</span><span class="pp"> </span></span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="kw">using</span> <span class="kw">namespace</span> Rcpp;</span>
 <span id="cb2-3"><a href="#cb2-3"></a></span>
@@ -1677,8 +1678,9 @@ DEMS<br>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">addition</span>(<span class="dv">4</span>, <span class="dv">5</span>)</span>
 <span id="cb3-2"><a href="#cb3-2"></a>[<span class="dv">1</span>] <span class="dv">9</span></span></code></pre></div>
 </div>
+</div>
 <div id="the-syntax-of-rcpp-and-rcpparmadillo" class="section level2">
-<h2>The syntax of Rcpp and RcppArmadillo</h2>
+<h2>The syntax of <code>Rcpp</code> and <code>RcppArmadillo</code></h2>
 <div id="example-1-rnorm" class="section level3">
 <h3>Example 1: <code>rnorm</code></h3>
 <div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1"></a><span class="pp">#include </span><span class="im">&lt;Rcpp.h&gt;</span><span class="pp"> </span><span class="co">// Rcpp library</span></span>
@@ -1718,14 +1720,14 @@ DEMS<br>
 <td align="left">2</td>
 <td align="left">R</td>
 <td align="right">1000</td>
-<td align="right">0.553</td>
-<td align="right">1.292</td>
+<td align="right">0.573</td>
+<td align="right">1.358</td>
 </tr>
 <tr class="even">
 <td align="left">1</td>
 <td align="left">Rcpp</td>
 <td align="right">1000</td>
-<td align="right">0.428</td>
+<td align="right">0.422</td>
 <td align="right">1.000</td>
 </tr>
 </tbody>
@@ -1782,29 +1784,29 @@ DEMS<br>
 <td align="left">4</td>
 <td align="left">lm</td>
 <td align="right">1000</td>
-<td align="right">3.100</td>
-<td align="right">33.333</td>
+<td align="right">3.189</td>
+<td align="right">31.265</td>
 </tr>
 <tr class="even">
 <td align="left">1</td>
 <td align="left">lm_coef1(X, y)</td>
 <td align="right">1000</td>
-<td align="right">0.537</td>
-<td align="right">5.774</td>
+<td align="right">0.638</td>
+<td align="right">6.255</td>
 </tr>
 <tr class="odd">
 <td align="left">2</td>
 <td align="left">lm_coef2(X, y)</td>
 <td align="right">1000</td>
-<td align="right">0.093</td>
+<td align="right">0.102</td>
 <td align="right">1.000</td>
 </tr>
 <tr class="even">
 <td align="left">3</td>
 <td align="left">Rcpp</td>
 <td align="right">1000</td>
-<td align="right">0.124</td>
-<td align="right">1.333</td>
+<td align="right">0.126</td>
+<td align="right">1.235</td>
 </tr>
 </tbody>
 </table>
@@ -1813,6 +1815,12 @@ DEMS<br>
 </div>
 <div id="gibbs-sampling" class="section level2">
 <h2>Gibbs sampling</h2>
+<div id="gaussian-model" class="section level3">
+<h3>Gaussian model</h3>
+</div>
+<div id="change-point-model" class="section level3">
+<h3>Change point model</h3>
+</div>
 </div>
 
 
