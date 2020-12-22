@@ -1667,7 +1667,7 @@ DEMS<br>
 <p>Survival of patients on the waiting list for the Stanford heart transplant program.</p>
 </blockquote>
 <p>See also the documentation of the <code>hearth</code> dataset for more details. The survival times are stored in the <code>time</code> variable which can be either <strong>complete</strong> (<code>status = 1</code>) or <strong>censored</strong> (<code>status = 0</code>).</p>
-<p>Let <span class="math inline">\(\textbf{t} = (t_1,\dots,t_n)\)</span> be the vector of the observed survival times and let <span class="math inline">\(\textbf{d} = (d_1,\dots,d_n)\)</span> be the corresponding binary vector of censorship statuses. We load in <strong>R</strong> these quantities and we obtain the <strong>Kaplan-Meier</strong> estimate of the survival function.</p>
+<p>Let <span class="math inline">\(\textbf{t} = (t_1,\dots,t_n)^\intercal\)</span> be the vector of the observed survival times and let <span class="math inline">\(\textbf{d} = (d_1,\dots,d_n)^\intercal\)</span> be the corresponding binary vector of censorship statuses. We load in <strong>R</strong> these quantities and we obtain the <strong>Kaplan-Meier</strong> estimate of the survival function.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(survival)</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="kw">data</span>(stanford2)</span>
 <span id="cb1-3"><a href="#cb1-3"></a>t &lt;-<span class="st"> </span>stanford2<span class="op">$</span>time <span class="co"># Survival times</span></span>
@@ -1721,7 +1721,7 @@ f(t \mid \alpha, \beta) = \frac{\alpha}{\beta}\left(\frac{t}{\beta}\right)^{\alp
 <span id="cb4-16"><a href="#cb4-16"></a>  n &lt;-<span class="st"> </span><span class="kw">length</span>(t) <span class="co"># Sample size</span></span>
 <span id="cb4-17"><a href="#cb4-17"></a>  log_hazards &lt;-<span class="st"> </span><span class="ot">NULL</span></span>
 <span id="cb4-18"><a href="#cb4-18"></a>  log_survivals &lt;-<span class="st"> </span><span class="ot">NULL</span></span>
-<span id="cb4-19"><a href="#cb4-19"></a></span>
+<span id="cb4-19"><a href="#cb4-19"></a>  </span>
 <span id="cb4-20"><a href="#cb4-20"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n) {</span>
 <span id="cb4-21"><a href="#cb4-21"></a>    log_hazards &lt;-<span class="st"> </span><span class="kw">c</span>(log_hazards, d[i] <span class="op">*</span><span class="st"> </span>((alpha <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span><span class="st"> </span><span class="kw">log</span>(t[i] <span class="op">/</span><span class="st"> </span>beta) <span class="op">+</span><span class="st"> </span><span class="kw">log</span>(alpha <span class="op">/</span><span class="st"> </span>beta)))</span>
 <span id="cb4-22"><a href="#cb4-22"></a>    log_survivals &lt;-<span class="st"> </span><span class="kw">c</span>(log_survivals, <span class="op">-</span>(t[i] <span class="op">/</span><span class="st"> </span>beta)<span class="op">^</span>alpha)</span>
@@ -1842,7 +1842,7 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 <span id="cb11-4"><a href="#cb11-4"></a><span class="kw">tic</span>()</span>
 <span id="cb11-5"><a href="#cb11-5"></a>fit_MCMC &lt;-<span class="st"> </span><span class="kw">RMH</span>(R, burn_in, t, d)</span>
 <span id="cb11-6"><a href="#cb11-6"></a><span class="kw">toc</span>()</span>
-<span id="cb11-7"><a href="#cb11-7"></a><span class="fl">1.807</span> sec elapsed</span></code></pre></div>
+<span id="cb11-7"><a href="#cb11-7"></a><span class="fl">2.513</span> sec elapsed</span></code></pre></div>
 </div>
 <div id="analysis-of-the-results" class="section level2">
 <h2>Analysis of the results</h2>

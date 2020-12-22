@@ -1653,69 +1653,117 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Computational Statistics II</h1>
-<h3 class="subtitle">Unit A.2: Gibbs-sampling in Rcpp &amp; RcppArmadillo</h3>
+<h3 class="subtitle">Unit A.2: Rcpp &amp; RcppArmadillo</h3>
 <h4 class="author">Tommaso Rigon</h4>
 <address class="author_afil">
 DEMS<br>
 </div>
 
 
-<div id="rcpp-and-rcpparmadillo" class="section level2">
-<h2>Rcpp and RcppArmadillo</h2>
-<p>The <code>Rcpp</code> <strong>R</strong> package extends <strong>R</strong> functionalities with C++ code. The official website of <code>Rcpp</code> is <a href="http://www.rcpp.org">http://www.rcpp.org</a>.</p>
-<div id="installation" class="section level3">
-<h3>Installation</h3>
-<p>The <strong>R</strong> packages <code>Rcpp</code> and <code>RcppArmadillo</code> can be installed in the usual manner, i.e. using <code>install.packages(&quot;Rcpp&quot;)</code>. However, additional steps are required as you also need a C++ compiler. You can refer for example to this <a href="https://teuder.github.io/rcpp4everyone_en/020_install.html#install-rcpp">installation guide</a> for detailed instructions.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(Rcpp)</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(RcppArmadillo)</span></code></pre></div>
+<div id="documentation" class="section level2">
+<h2>Documentation</h2>
+<div id="rcpp" class="section level3">
+<h3>Rcpp</h3>
+<p>The <code>Rcpp</code> <strong>R</strong> package simplifies the interface between <strong>R</strong> and C++. The main advantage is that C++ code is usually faster than <strong>R</strong>, especially in non-vectorized settings.</p>
+<p>The official website of <code>Rcpp</code> is <a href="http://www.rcpp.org">http://www.rcpp.org</a>, but you can find a (huge) amount of tutorials and examples online. An important and useful read is</p>
+<ul>
+<li>Eddelbuettel, D. and Balamuta, J. J. (2018).Extending R with C++: A Brief Introduction to Rcpp. <em>The American Statistician</em>, <strong>72</strong>(1), 28–36.</li>
+</ul>
+<p>This paper is highly recommended as it provides further documentation, examples and discusses the “philosophy” behind <code>Rcpp</code>.</p>
 </div>
-<div id="the-first-function-in-rcpp" class="section level3">
-<h3>The first function in <code>Rcpp</code></h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1"></a><span class="pp">#include </span><span class="im">&lt;Rcpp.h&gt;</span><span class="pp"> </span><span class="co">// Import the Rcpp library</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">using</span> <span class="kw">namespace</span> Rcpp; </span>
-<span id="cb2-3"><a href="#cb2-3"></a></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co">// [[Rcpp::export]] </span></span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="dt">double</span> rcpp_sum(NumericVector v){</span>
-<span id="cb2-6"><a href="#cb2-6"></a>    <span class="dt">double</span> sum = <span class="dv">0</span>;</span>
-<span id="cb2-7"><a href="#cb2-7"></a>    <span class="dt">int</span> n = v.length();</span>
-<span id="cb2-8"><a href="#cb2-8"></a>    <span class="cf">for</span>(<span class="dt">int</span> i=<span class="dv">0</span>; i &lt; n; i++){</span>
-<span id="cb2-9"><a href="#cb2-9"></a>        sum += v[i];</span>
-<span id="cb2-10"><a href="#cb2-10"></a>    }</span>
-<span id="cb2-11"><a href="#cb2-11"></a>    <span class="cf">return</span>(sum);</span>
-<span id="cb2-12"><a href="#cb2-12"></a>}</span></code></pre></div>
-<p>We can finally test the <code>rcpp_sum</code> function and compare it with the <strong>R</strong> implementation.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">5</span>, <span class="dv">30</span>, <span class="dv">21</span>, <span class="dv">78</span>, pi, <span class="kw">exp</span>(<span class="dv">7</span>))</span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">rcpp_sum</span>(x) <span class="co"># Sum of the vector x</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a>[<span class="dv">1</span>] <span class="fl">1263.775</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">sum</span>(x) <span class="co"># Equivalent R command</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a>[<span class="dv">1</span>] <span class="fl">1263.775</span></span></code></pre></div>
+<div id="rcpparmadillo" class="section level3">
+<h3>RcppArmadillo</h3>
+<p>The package <code>RcppArmadillo</code> is an extension of <code>Rcpp</code> designed for highly efficient <strong>linear algebra</strong>.</p>
+<p>As described in the official documentation (<a href="http://arma.sourceforge.net" class="uri">http://arma.sourceforge.net</a>), Armadillo is a “high quality linear algebra library (matrix maths) for the C++ language, aiming towards a good balance between speed and ease of use”.</p>
+<p>The syntax is deliberately similar to that of Matlab and <strong>R</strong>.</p>
 </div>
+</div>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>In first place, you <strong>need a C++ compiler</strong>. For <code>RcppArmadillo</code> you will also need a <strong>Fortran compiler</strong>.</p>
+<p>If you are a <strong>Windows user</strong>, you just need to install <a href="https://cran.r-project.org/bin/windows/Rtools/">Rtools</a>, as described here:</p>
+<ul>
+<li><a href="https://thecoatlessprofessor.com/programming/cpp/installing-rtools-for-compiled-code-via-rcpp/" class="uri">https://thecoatlessprofessor.com/programming/cpp/installing-rtools-for-compiled-code-via-rcpp/</a></li>
+</ul>
+<p>If you are a <strong>Mac Os user</strong>, unfortunately the procedure is slightly more complicate. You can refer to:</p>
+<ul>
+<li><a href="https://thecoatlessprofessor.com/programming/cpp/r-compiler-tools-for-rcpp-on-macos/" class="uri">https://thecoatlessprofessor.com/programming/cpp/r-compiler-tools-for-rcpp-on-macos/</a></li>
+</ul>
+<p>If you are a <strong>Linux user</strong>, you probably already know what to do. In any event, this is the easieast case as you just need to run the following commands</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># RHEL/CentOS</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">sudo</span> yum update</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="fu">sudo</span> yum install R</span>
+<span id="cb1-4"><a href="#cb1-4"></a></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="co"># Ubuntu</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="fu">sudo</span> apt-get update</span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="fu">sudo</span> apt-get install r-base r-base-dev</span></code></pre></div>
+<p>Finally, the <strong>R</strong> packages <code>Rcpp</code> and <code>RcppArmadillo</code> can be installed in the usual manner, i.e. using <code>install.packages(&quot;Rcpp&quot;)</code> and <code>install.packages(&quot;RcppArmadillo&quot;)</code>.</p>
 </div>
 <div id="basic-examples" class="section level2">
 <h2>Basic examples</h2>
+<div id="verifying-the-installation-and-basic-usage" class="section level3">
+<h3>Verifying the installation and basic usage</h3>
+<p>In first place, let us load the <strong>R</strong> packages into memory.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">library</span>(Rcpp)</span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">library</span>(RcppArmadillo)</span></code></pre></div>
+<p>In order to write a C++ function, we need to perform the following step</p>
+<ol style="list-style-type: decimal">
+<li><p>Create an empty file, say <code>file.cpp</code>, which will contain the C++ code. If you are using <strong>Rstudio</strong>, you can create it from File –&gt; New file.</p></li>
+<li><p>Save the C++ file and <strong>compile it</strong> using the <code>sourceCpp</code> function of the <code>Rcpp</code> package.</p></li>
+<li><p>Use the functions contained in the C++ file within <strong>R</strong>, as usual.</p></li>
+</ol>
+<p>We create a <code>sum.cpp</code> file including the function <code>arma_sum</code>, which computes the sum of the elements of a vector. You can include multiple functions into a single file, but only those preceeded by <code>// [[Rcpp::export]]</code> will be available within <strong>R</strong>.</p>
+<p>The C++ code of the <code>sum.cpp</code> file is given in the following. Note that we need to <strong>import the Rcpp and RcppArmadillo libraries</strong>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1"></a><span class="pp">#include </span><span class="im">&lt;RcppArmadillo.h&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="co">// [[Rcpp::depends(RcppArmadillo)]]</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="kw">using</span> <span class="kw">namespace</span> Rcpp;</span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">using</span> <span class="kw">namespace</span> arma; <span class="co">// Namespace of Armadillo</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co">// [[Rcpp::export]] </span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="dt">double</span> arma_sum(vec v){</span>
+<span id="cb3-8"><a href="#cb3-8"></a>  <span class="dt">double</span> sum = <span class="dv">0</span>;</span>
+<span id="cb3-9"><a href="#cb3-9"></a>  <span class="dt">int</span> n = v.n_elem;</span>
+<span id="cb3-10"><a href="#cb3-10"></a>  <span class="cf">for</span>(<span class="dt">int</span> i=<span class="dv">0</span>; i &lt; n; i++){</span>
+<span id="cb3-11"><a href="#cb3-11"></a>    sum += v[i];</span>
+<span id="cb3-12"><a href="#cb3-12"></a>  }</span>
+<span id="cb3-13"><a href="#cb3-13"></a>  <span class="cf">return</span>(sum);</span>
+<span id="cb3-14"><a href="#cb3-14"></a>}</span></code></pre></div>
+<p>Then, we can <strong>compile</strong> the <code>sum.cpp</code> file with the following command. If you are using <strong>RStudio</strong>, you can also click on the <strong>source button</strong>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co"># In this case the file is saved in a different folder.</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="co"># Obviously, you need to change the PATH as needed</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="kw">sourceCpp</span>(<span class="st">&quot;../cpp/sum.cpp&quot;</span>) </span></code></pre></div>
+<p>We can finally test the <code>arma_sum</code> function and compare it with the <strong>R</strong> implementation.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">5</span>, <span class="dv">30</span>, <span class="dv">21</span>, <span class="dv">78</span>, pi, <span class="kw">exp</span>(<span class="dv">7</span>))</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">arma_sum</span>(x) <span class="co"># Sum of the vector x</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>[<span class="dv">1</span>] <span class="fl">1263.775</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="kw">sum</span>(x) <span class="co"># Equivalent R command</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a>[<span class="dv">1</span>] <span class="fl">1263.775</span></span></code></pre></div>
+</div>
 <div id="example-1-rnorm" class="section level3">
 <h3>Example 1: <code>rnorm</code></h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1"></a><span class="pp">#include </span><span class="im">&lt;Rcpp.h&gt;</span><span class="pp"> </span><span class="co">// Rcpp library</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">using</span> <span class="kw">namespace</span> Rcpp;</span>
-<span id="cb4-3"><a href="#cb4-3"></a></span>
-<span id="cb4-4"><a href="#cb4-4"></a><span class="co">// [[Rcpp::export]]</span></span>
-<span id="cb4-5"><a href="#cb4-5"></a>Rcpp::NumericVector rnorm2(<span class="dt">int</span> n, <span class="dt">double</span> mean, <span class="dt">double</span> sd) {</span>
-<span id="cb4-6"><a href="#cb4-6"></a>  NumericVector out(n); <span class="co">// Allocate a vector of dimension n</span></span>
-<span id="cb4-7"><a href="#cb4-7"></a>  <span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; i++) {</span>
-<span id="cb4-8"><a href="#cb4-8"></a>    out[i] = R::rnorm(mean, sd); <span class="co">// Random gaussian</span></span>
-<span id="cb4-9"><a href="#cb4-9"></a>  }</span>
-<span id="cb4-10"><a href="#cb4-10"></a>    <span class="cf">return</span> out; </span>
-<span id="cb4-11"><a href="#cb4-11"></a>}</span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">rnorm2</span>(<span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb5-3"><a href="#cb5-3"></a>[<span class="dv">1</span>] <span class="fl">-0.56047565</span> <span class="fl">-0.23017749</span>  <span class="fl">1.55870831</span>  <span class="fl">0.07050839</span>  <span class="fl">0.12928774</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1"></a><span class="pp">#include </span><span class="im">&lt;RcppArmadillo.h&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="co">// [[Rcpp::depends(RcppArmadillo)]]</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="kw">using</span> <span class="kw">namespace</span> Rcpp;</span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="kw">using</span> <span class="kw">namespace</span> arma;</span>
+<span id="cb6-5"><a href="#cb6-5"></a></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="co">// [[Rcpp::export]]</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a>vec rnorm2(<span class="dt">int</span> n, <span class="dt">double</span> mean, <span class="dt">double</span> sd) {</span>
+<span id="cb6-8"><a href="#cb6-8"></a>  vec out(n); <span class="co">// Allocate a vector of dimension n</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a>  <span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; i++) {</span>
+<span id="cb6-10"><a href="#cb6-10"></a>    out[i] = R::rnorm(mean, sd); <span class="co">// Random gaussian</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a>  }</span>
+<span id="cb6-12"><a href="#cb6-12"></a>    <span class="cf">return</span> out; </span>
+<span id="cb6-13"><a href="#cb6-13"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="kw">c</span>(<span class="kw">rnorm2</span>(<span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb7-3"><a href="#cb7-3"></a>[<span class="dv">1</span>] <span class="fl">-0.56047565</span> <span class="fl">-0.23017749</span>  <span class="fl">1.55870831</span>  <span class="fl">0.07050839</span>  <span class="fl">0.12928774</span></span></code></pre></div>
 <div id="comparison-with-r" class="section level4">
 <h4>Comparison with R</h4>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">library</span>(rbenchmark)</span>
-<span id="cb6-2"><a href="#cb6-2"></a><span class="kw">benchmark</span>(<span class="dt">Rcpp =</span> <span class="kw">rnorm2</span>(<span class="dv">10</span><span class="op">^</span><span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">5</span>),</span>
-<span id="cb6-3"><a href="#cb6-3"></a>          <span class="dt">R =</span> <span class="kw">rnorm</span>(<span class="dv">10</span><span class="op">^</span><span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">5</span>),</span>
-<span id="cb6-4"><a href="#cb6-4"></a>          <span class="dt">columns =</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>),</span>
-<span id="cb6-5"><a href="#cb6-5"></a>          <span class="dt">replications =</span> <span class="dv">1000</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">library</span>(rbenchmark)</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="kw">benchmark</span>(<span class="dt">Rcpp =</span> <span class="kw">rnorm2</span>(<span class="dv">10</span><span class="op">^</span><span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">5</span>),</span>
+<span id="cb8-3"><a href="#cb8-3"></a>          <span class="dt">R =</span> <span class="kw">rnorm</span>(<span class="dv">10</span><span class="op">^</span><span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">5</span>),</span>
+<span id="cb8-4"><a href="#cb8-4"></a>          <span class="dt">columns =</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>),</span>
+<span id="cb8-5"><a href="#cb8-5"></a>          <span class="dt">replications =</span> <span class="dv">1000</span>)</span></code></pre></div>
 <div class="kable-table">
 <table>
 <thead>
@@ -1732,14 +1780,14 @@ DEMS<br>
 <td align="left">2</td>
 <td align="left">R</td>
 <td align="right">1000</td>
-<td align="right">0.63</td>
-<td align="right">1.105</td>
+<td align="right">0.707</td>
+<td align="right">1.547</td>
 </tr>
 <tr class="even">
 <td align="left">1</td>
 <td align="left">Rcpp</td>
 <td align="right">1000</td>
-<td align="right">0.57</td>
+<td align="right">0.457</td>
 <td align="right">1.000</td>
 </tr>
 </tbody>
@@ -1752,34 +1800,37 @@ DEMS<br>
 </div>
 <div id="example-3-linear-models" class="section level3">
 <h3>Example 3: linear models</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>lm_coef1 &lt;-<span class="st"> </span><span class="cf">function</span>(X, y){</span>
-<span id="cb7-2"><a href="#cb7-2"></a>  <span class="kw">solve</span>(<span class="kw">t</span>(X) <span class="op">%*%</span><span class="st"> </span>X) <span class="op">%*%</span><span class="st"> </span><span class="kw">t</span>(X) <span class="op">%*%</span><span class="st"> </span>y</span>
-<span id="cb7-3"><a href="#cb7-3"></a>}</span>
-<span id="cb7-4"><a href="#cb7-4"></a></span>
-<span id="cb7-5"><a href="#cb7-5"></a>lm_coef2 &lt;-<span class="st"> </span><span class="cf">function</span>(X, y){</span>
-<span id="cb7-6"><a href="#cb7-6"></a>  <span class="kw">solve</span>(<span class="kw">crossprod</span>(X), <span class="kw">crossprod</span>(X,y))</span>
-<span id="cb7-7"><a href="#cb7-7"></a>}</span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1"></a><span class="pp">#include </span><span class="im">&lt;RcppArmadillo.h&gt;</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="co">// [[Rcpp::depends(RcppArmadillo)]]</span></span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="co">// [[Rcpp::export]]</span></span>
-<span id="cb8-4"><a href="#cb8-4"></a>arma::colvec lm_coef3(<span class="at">const</span> arma::mat&amp; X, <span class="at">const</span> arma::colvec&amp; y) {</span>
-<span id="cb8-5"><a href="#cb8-5"></a>  arma::colvec coef = arma::solve(X, y);</span>
-<span id="cb8-6"><a href="#cb8-6"></a>  <span class="cf">return</span>(coef);</span>
-<span id="cb8-7"><a href="#cb8-7"></a>}</span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>X &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dv">1</span>,<span class="kw">rnorm</span>(<span class="dv">10</span><span class="op">^</span><span class="dv">4</span>))</span>
-<span id="cb9-2"><a href="#cb9-2"></a>y &lt;-<span class="st"> </span><span class="kw">rowSums</span>(X) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">10</span><span class="op">^</span><span class="dv">4</span>)</span>
-<span id="cb9-3"><a href="#cb9-3"></a></span>
-<span id="cb9-4"><a href="#cb9-4"></a><span class="kw">cbind</span>(<span class="kw">lm_coef1</span>(X, y), <span class="kw">lm_coef2</span>(X, y), <span class="kw">lm_coef3</span>(X, y))</span>
-<span id="cb9-5"><a href="#cb9-5"></a>          [,<span class="dv">1</span>]      [,<span class="dv">2</span>]      [,<span class="dv">3</span>]</span>
-<span id="cb9-6"><a href="#cb9-6"></a>[<span class="dv">1</span>,] <span class="fl">0.9947731</span> <span class="fl">0.9947731</span> <span class="fl">0.9947731</span></span>
-<span id="cb9-7"><a href="#cb9-7"></a>[<span class="dv">2</span>,] <span class="fl">0.9950695</span> <span class="fl">0.9950695</span> <span class="fl">0.9950695</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">library</span>(rbenchmark)</span>
-<span id="cb10-2"><a href="#cb10-2"></a><span class="kw">benchmark</span>(<span class="kw">lm_coef1</span>(X, y),</span>
-<span id="cb10-3"><a href="#cb10-3"></a>          <span class="kw">lm_coef2</span>(X, y),</span>
-<span id="cb10-4"><a href="#cb10-4"></a>          <span class="dt">Rcpp =</span> <span class="kw">lm_coef3</span>(X, y),</span>
-<span id="cb10-5"><a href="#cb10-5"></a>          <span class="dt">lm =</span> <span class="kw">coef</span>(<span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>X, <span class="dt">data =</span> cars)),</span>
-<span id="cb10-6"><a href="#cb10-6"></a>          <span class="dt">columns =</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>),</span>
-<span id="cb10-7"><a href="#cb10-7"></a>          <span class="dt">replications =</span> <span class="dv">1000</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>lm_coef1 &lt;-<span class="st"> </span><span class="cf">function</span>(X, y){</span>
+<span id="cb9-2"><a href="#cb9-2"></a>  <span class="kw">solve</span>(<span class="kw">t</span>(X) <span class="op">%*%</span><span class="st"> </span>X) <span class="op">%*%</span><span class="st"> </span><span class="kw">t</span>(X) <span class="op">%*%</span><span class="st"> </span>y</span>
+<span id="cb9-3"><a href="#cb9-3"></a>}</span>
+<span id="cb9-4"><a href="#cb9-4"></a></span>
+<span id="cb9-5"><a href="#cb9-5"></a>lm_coef2 &lt;-<span class="st"> </span><span class="cf">function</span>(X, y){</span>
+<span id="cb9-6"><a href="#cb9-6"></a>  <span class="kw">solve</span>(<span class="kw">crossprod</span>(X), <span class="kw">crossprod</span>(X,y))</span>
+<span id="cb9-7"><a href="#cb9-7"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1"></a><span class="pp">#include </span><span class="im">&lt;RcppArmadillo.h&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="co">// [[Rcpp::depends(RcppArmadillo)]]</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="kw">using</span> <span class="kw">namespace</span> Rcpp;</span>
+<span id="cb10-4"><a href="#cb10-4"></a><span class="kw">using</span> <span class="kw">namespace</span> arma;</span>
+<span id="cb10-5"><a href="#cb10-5"></a></span>
+<span id="cb10-6"><a href="#cb10-6"></a><span class="co">// [[Rcpp::export]]</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a>vec lm_coef3(<span class="at">const</span> mat&amp; X, <span class="at">const</span> vec&amp; y) {</span>
+<span id="cb10-8"><a href="#cb10-8"></a>  vec coef = solve(X, y);</span>
+<span id="cb10-9"><a href="#cb10-9"></a>  <span class="cf">return</span>(coef);</span>
+<span id="cb10-10"><a href="#cb10-10"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>X &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dv">1</span>,<span class="kw">rnorm</span>(<span class="dv">10</span><span class="op">^</span><span class="dv">4</span>))</span>
+<span id="cb11-2"><a href="#cb11-2"></a>y &lt;-<span class="st"> </span><span class="kw">rowSums</span>(X) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">10</span><span class="op">^</span><span class="dv">4</span>)</span>
+<span id="cb11-3"><a href="#cb11-3"></a></span>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="kw">cbind</span>(<span class="kw">lm_coef1</span>(X, y), <span class="kw">lm_coef2</span>(X, y), <span class="kw">lm_coef3</span>(X, y))</span>
+<span id="cb11-5"><a href="#cb11-5"></a>          [,<span class="dv">1</span>]      [,<span class="dv">2</span>]      [,<span class="dv">3</span>]</span>
+<span id="cb11-6"><a href="#cb11-6"></a>[<span class="dv">1</span>,] <span class="fl">0.9947731</span> <span class="fl">0.9947731</span> <span class="fl">0.9947731</span></span>
+<span id="cb11-7"><a href="#cb11-7"></a>[<span class="dv">2</span>,] <span class="fl">0.9950695</span> <span class="fl">0.9950695</span> <span class="fl">0.9950695</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">library</span>(rbenchmark)</span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="kw">benchmark</span>(<span class="kw">lm_coef1</span>(X, y),</span>
+<span id="cb12-3"><a href="#cb12-3"></a>          <span class="kw">lm_coef2</span>(X, y),</span>
+<span id="cb12-4"><a href="#cb12-4"></a>          <span class="dt">Rcpp =</span> <span class="kw">lm_coef3</span>(X, y),</span>
+<span id="cb12-5"><a href="#cb12-5"></a>          <span class="dt">lm =</span> <span class="kw">coef</span>(<span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>X, <span class="dt">data =</span> cars)),</span>
+<span id="cb12-6"><a href="#cb12-6"></a>          <span class="dt">columns =</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>),</span>
+<span id="cb12-7"><a href="#cb12-7"></a>          <span class="dt">replications =</span> <span class="dv">1000</span>)</span></code></pre></div>
 <div class="kable-table">
 <table>
 <thead>
@@ -1796,43 +1847,40 @@ DEMS<br>
 <td align="left">4</td>
 <td align="left">lm</td>
 <td align="right">1000</td>
-<td align="right">3.796</td>
-<td align="right">37.216</td>
+<td align="right">3.345</td>
+<td align="right">35.211</td>
 </tr>
 <tr class="even">
 <td align="left">1</td>
 <td align="left">lm_coef1(X, y)</td>
 <td align="right">1000</td>
-<td align="right">0.634</td>
-<td align="right">6.216</td>
+<td align="right">0.584</td>
+<td align="right">6.147</td>
 </tr>
 <tr class="odd">
 <td align="left">2</td>
 <td align="left">lm_coef2(X, y)</td>
 <td align="right">1000</td>
-<td align="right">0.102</td>
+<td align="right">0.095</td>
 <td align="right">1.000</td>
 </tr>
 <tr class="even">
 <td align="left">3</td>
 <td align="left">Rcpp</td>
 <td align="right">1000</td>
-<td align="right">0.141</td>
-<td align="right">1.382</td>
+<td align="right">0.128</td>
+<td align="right">1.347</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 </div>
-<div id="gibbs-sampling" class="section level2">
-<h2>Gibbs sampling</h2>
-<div id="gaussian-model" class="section level3">
-<h3>Gaussian model</h3>
+<div id="gibbs-sampling-for-gaussian-data" class="section level2">
+<h2>Gibbs sampling for Gaussian data</h2>
 </div>
-<div id="change-point-model" class="section level3">
-<h3>Change point model</h3>
-</div>
+<div id="gibbs-sampling-for-a-change-point-model" class="section level2">
+<h2>Gibbs sampling for a change-point model</h2>
 </div>
 
 
