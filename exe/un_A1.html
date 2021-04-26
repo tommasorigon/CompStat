@@ -394,7 +394,7 @@ f(t \mid \alpha, \beta) = \frac{\alpha}{\beta}\left(\frac{t}{\beta}\right)^{\alp
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">length</span>(t) <span class="co"># Sample size</span></span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  log_hazards <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  log_survivals <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n) {</span>
 <span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    log_hazards <span class="ot">&lt;-</span> <span class="fu">c</span>(log_hazards, d[i] <span class="sc">*</span> ((alpha <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> <span class="fu">log</span>(t[i] <span class="sc">/</span> beta) <span class="sc">+</span> <span class="fu">log</span>(alpha <span class="sc">/</span> beta)))</span>
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    log_survivals <span class="ot">&lt;-</span> <span class="fu">c</span>(log_survivals, <span class="sc">-</span>(t[i] <span class="sc">/</span> beta)<span class="sc">^</span>alpha)</span>
@@ -515,7 +515,7 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tic</span>()</span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>fit_MCMC <span class="ot">&lt;-</span> <span class="fu">RMH</span>(R, burn_in, t, d)</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">toc</span>()</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fl">1.559</span> sec elapsed</span></code></pre></div>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fl">1.567</span> sec elapsed</span></code></pre></div>
 </div>
 <div id="analysis-of-the-results" class="section level2">
 <h2>Analysis of the results</h2>
