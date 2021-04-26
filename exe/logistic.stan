@@ -8,5 +8,7 @@ parameters {
   vector[p] beta;       // coefficients for predictors
 }
 model {
+  for(j in 1:p)
+      beta[j] ~ normal(0, sqrt(100));
   y ~ bernoulli_logit(X * beta);
 }
