@@ -339,7 +339,7 @@ DEMS<br>
 <blockquote>
 <p>Survival of patients on the waiting list for the Stanford heart transplant program.</p>
 </blockquote>
-<p>See also the documentation of the <code>hearth</code> dataset for a more comprehensive description. The survival times are saved in the <code>time</code> variable which can be either <strong>complete</strong> (<code>status = 1</code>) or <strong>censored</strong> (<code>status = 0</code>).</p>
+<p>See also the documentation of the <code>hearth</code> dataset for a more complete description. The survival times are saved in the <code>time</code> variable which can be either <strong>complete</strong> (<code>status = 1</code>) or <strong>censored</strong> (<code>status = 0</code>).</p>
 <p>Let <span class="math inline">\(\textbf{t} = (t_1,\dots,t_n)^\intercal\)</span> be the vector of the observed survival times and let <span class="math inline">\(\textbf{d} = (d_1,\dots,d_n)^\intercal\)</span> be the corresponding binary vector of censorship statuses. We load in <strong>R</strong> these quantities and we obtain the <strong>Kaplan-Meier</strong> estimate of the survival function.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(stanford2)</span>
@@ -444,20 +444,20 @@ f(t \mid \alpha, \beta) = \frac{\alpha}{\beta}\left(\frac{t}{\beta}\right)^{\alp
 <tr class="odd">
 <td align="left">loglik1</td>
 <td align="right">1000</td>
-<td align="right">0.015</td>
+<td align="right">0.013</td>
 <td align="right">1.000</td>
 </tr>
 <tr class="even">
 <td align="left">loglik2</td>
 <td align="right">1000</td>
-<td align="right">0.073</td>
-<td align="right">4.867</td>
+<td align="right">0.066</td>
+<td align="right">5.077</td>
 </tr>
 <tr class="odd">
 <td align="left">loglik3</td>
 <td align="right">1000</td>
-<td align="right">0.415</td>
-<td align="right">27.667</td>
+<td align="right">0.359</td>
+<td align="right">27.615</td>
 </tr>
 </tbody>
 </table>
@@ -492,20 +492,23 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>RMH <span class="ot">&lt;-</span> <span class="cf">function</span>(R, burn_in, t, d) {</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, R, <span class="dv">2</span>) <span class="co"># Initialize an empty matrix to store the values</span></span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  theta <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>) <span class="co"># Initial values</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (r <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(burn_in <span class="sc">+</span> R)) {</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    theta_new <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">2</span>, <span class="at">mean =</span> theta, <span class="at">sd =</span> <span class="fl">0.25</span>) <span class="co"># Propose a new value</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    alpha <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="dv">1</span>, <span class="fu">exp</span>(<span class="fu">logpost</span>(t, d, theta_new) <span class="sc">-</span> <span class="fu">logpost</span>(t, d, theta)))</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">runif</span>(<span class="dv">1</span>) <span class="sc">&lt;</span> alpha) {</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>      theta <span class="ot">&lt;-</span> theta_new <span class="co"># Accept the value</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Store the values after the burn-in period</span></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (r <span class="sc">&gt;</span> burn_in) {</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>      out[r <span class="sc">-</span> burn_in, ] <span class="ot">&lt;-</span> theta</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  out</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  logp <span class="ot">&lt;-</span> <span class="fu">logpost</span>(t, d, theta) <span class="co"># Log-posterior</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (r <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(burn_in <span class="sc">+</span> R)) {</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    theta_new <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">2</span>, <span class="at">mean =</span> theta, <span class="at">sd =</span> <span class="fl">0.25</span>) <span class="co"># Propose a new value</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    logp_new <span class="ot">&lt;-</span> <span class="fu">logpost</span>(t, d, theta_new)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    alpha <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="dv">1</span>, <span class="fu">exp</span>(logp_new <span class="sc">-</span> logp))</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">runif</span>(<span class="dv">1</span>) <span class="sc">&lt;</span> alpha) {</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>      theta <span class="ot">&lt;-</span> theta_new <span class="co"># Accept the value</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>      logp <span class="ot">&lt;-</span> logp_new</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Store the values after the burn-in period</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (r <span class="sc">&gt;</span> burn_in) {</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>      out[r <span class="sc">-</span> burn_in, ] <span class="ot">&lt;-</span> theta</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  out</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>We can now run the algorithm. We choose <code>R = 50000</code> and <code>burn_in = 5000</code>.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>R <span class="ot">&lt;-</span> <span class="dv">50000</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>burn_in <span class="ot">&lt;-</span> <span class="dv">5000</span></span></code></pre></div>
@@ -515,7 +518,7 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tic</span>()</span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>fit_MCMC <span class="ot">&lt;-</span> <span class="fu">RMH</span>(R, burn_in, t, d)</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">toc</span>()</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fl">1.567</span> sec elapsed</span></code></pre></div>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fl">0.92</span> sec elapsed</span></code></pre></div>
 </div>
 <div id="analysis-of-the-results" class="section level2">
 <h2>Analysis of the results</h2>
