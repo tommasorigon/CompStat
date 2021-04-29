@@ -460,14 +460,14 @@ DEMS<br>
 <td align="left">2</td>
 <td align="left">R</td>
 <td align="right">1000</td>
-<td align="right">0.576</td>
-<td align="right">1.321</td>
+<td align="right">0.574</td>
+<td align="right">1.302</td>
 </tr>
 <tr class="even">
 <td align="left">1</td>
 <td align="left">Rcpp</td>
 <td align="right">1000</td>
-<td align="right">0.436</td>
+<td align="right">0.441</td>
 <td align="right">1.000</td>
 </tr>
 </tbody>
@@ -525,7 +525,7 @@ d_{ii&#39;} = \sqrt{\sum_{j=1}^p (x_{ij} - x_{i&#39;j})^2}, \qquad i,i&#39; \in 
 <span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>[<span class="dv">1</span>,]  <span class="fl">0.00000</span> <span class="fl">10.049876</span> <span class="fl">18.110770</span></span>
 <span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>[<span class="dv">2</span>,] <span class="fl">10.04988</span>  <span class="fl">0.000000</span>  <span class="fl">8.062258</span></span>
 <span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>[<span class="dv">3</span>,] <span class="fl">18.11077</span>  <span class="fl">8.062258</span>  <span class="fl">0.000000</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(USArrests) <span class="co"># Use this dataset</span></span>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(USArrests) <span class="co"># Example dataset</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">benchmark</span>(</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">arma_dist =</span> <span class="fu">arma_dist</span>(X),</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">R_dist =</span> <span class="fu">R_dist</span>(X),</span>
@@ -549,22 +549,22 @@ d_{ii&#39;} = \sqrt{\sum_{j=1}^p (x_{ij} - x_{i&#39;j})^2}, \qquad i,i&#39; \in 
 <td align="left">1</td>
 <td align="left">arma_dist</td>
 <td align="right">1000</td>
-<td align="right">0.024</td>
+<td align="right">0.023</td>
 <td align="right">1.000</td>
 </tr>
 <tr class="even">
 <td align="left">3</td>
 <td align="left">dist</td>
 <td align="right">1000</td>
-<td align="right">0.101</td>
-<td align="right">4.208</td>
+<td align="right">0.102</td>
+<td align="right">4.435</td>
 </tr>
 <tr class="odd">
 <td align="left">2</td>
 <td align="left">R_dist</td>
 <td align="right">1000</td>
-<td align="right">2.945</td>
-<td align="right">122.708</td>
+<td align="right">3.058</td>
+<td align="right">132.957</td>
 </tr>
 </tbody>
 </table>
@@ -594,21 +594,21 @@ d_{ii&#39;} = \sqrt{\sum_{j=1}^p (x_{ij} - x_{i&#39;j})^2}, \qquad i,i&#39; \in 
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span>(coef);</span>
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>The next simulation seems to confirm that the <code>RcppArmadillo</code> is faster than naive R implementations, but actually slower than <code>lm_coef2</code>. This is expected, as the function <code>solve</code> of <strong>R</strong> is itself written in C++. The <code>lm</code> <strong>R</strong> command is very slow, but it is actually computing many more quantities than just the OLS estimate.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="dv">1</span>, <span class="fu">rnorm</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>))</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(X) <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(<span class="fu">lm_coef1</span>(X, y), <span class="fu">lm_coef2</span>(X, y), <span class="fu">lm_coef3</span>(X, y))</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>          [,<span class="dv">1</span>]      [,<span class="dv">2</span>]      [,<span class="dv">3</span>]</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>[<span class="dv">1</span>,] <span class="fl">0.9947731</span> <span class="fl">0.9947731</span> <span class="fl">0.9947731</span></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>[<span class="dv">2</span>,] <span class="fl">0.9950695</span> <span class="fl">0.9950695</span> <span class="fl">0.9950695</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rbenchmark)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">benchmark</span>(<span class="fu">lm_coef1</span>(X, y),</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lm_coef2</span>(X, y),</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Rcpp =</span> <span class="fu">lm_coef3</span>(X, y),</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lm =</span> <span class="fu">coef</span>(<span class="fu">lm</span>(y <span class="sc">~</span> X, <span class="at">data =</span> cars)),</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>),</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">replications =</span> <span class="dv">1000</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="dv">1</span>, <span class="fu">rnorm</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>))</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(X) <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(<span class="fu">lm_coef1</span>(X, y), <span class="fu">lm_coef2</span>(X, y), <span class="fu">lm_coef3</span>(X, y))</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>          [,<span class="dv">1</span>]      [,<span class="dv">2</span>]      [,<span class="dv">3</span>]</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>[<span class="dv">1</span>,] <span class="fl">0.9909079</span> <span class="fl">0.9909079</span> <span class="fl">0.9909079</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>[<span class="dv">2</span>,] <span class="fl">1.0060394</span> <span class="fl">1.0060394</span> <span class="fl">1.0060394</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">benchmark</span>(<span class="at">R_matrix_inv =</span> <span class="fu">lm_coef1</span>(X, y),</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">R_no_matrix_inv  =</span> <span class="fu">lm_coef2</span>(X, y),</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Rcpp =</span> <span class="fu">lm_coef3</span>(X, y),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lm =</span> <span class="fu">coef</span>(<span class="fu">lm</span>(y <span class="sc">~</span> X, <span class="at">data =</span> cars)),</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>),</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">replications =</span> <span class="dv">1000</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <div class="kable-table">
 <table>
 <thead>
@@ -625,29 +625,29 @@ d_{ii&#39;} = \sqrt{\sum_{j=1}^p (x_{ij} - x_{i&#39;j})^2}, \qquad i,i&#39; \in 
 <td align="left">4</td>
 <td align="left">lm</td>
 <td align="right">1000</td>
-<td align="right">3.115</td>
-<td align="right">33.495</td>
+<td align="right">3.340</td>
+<td align="right">32.745</td>
 </tr>
 <tr class="even">
 <td align="left">1</td>
-<td align="left">lm_coef1(X, y)</td>
+<td align="left">R_matrix_inv</td>
 <td align="right">1000</td>
-<td align="right">0.543</td>
-<td align="right">5.839</td>
+<td align="right">0.566</td>
+<td align="right">5.549</td>
 </tr>
 <tr class="odd">
 <td align="left">2</td>
-<td align="left">lm_coef2(X, y)</td>
+<td align="left">R_no_matrix_inv</td>
 <td align="right">1000</td>
-<td align="right">0.093</td>
+<td align="right">0.102</td>
 <td align="right">1.000</td>
 </tr>
 <tr class="even">
 <td align="left">3</td>
 <td align="left">Rcpp</td>
 <td align="right">1000</td>
-<td align="right">0.126</td>
-<td align="right">1.355</td>
+<td align="right">0.128</td>
+<td align="right">1.255</td>
 </tr>
 </tbody>
 </table>
@@ -749,7 +749,7 @@ d_{ii&#39;} = \sqrt{\sum_{j=1}^p (x_{ij} - x_{i&#39;j})^2}, \qquad i,i&#39; \in 
 <span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="fu">tic</span>()</span>
 <span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>fitR <span class="ot">&lt;-</span> <span class="fu">gibbs_R</span>(x, mu_mu, sigma2_mu, a_sigma, b_sigma, R, burn_in)</span>
 <span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="fu">toc</span>()</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="fl">0.415</span> sec elapsed</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="fl">0.387</span> sec elapsed</span>
 <span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="fu">tic</span>()</span>
 <span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>fitRcpp <span class="ot">&lt;-</span> <span class="fu">gibbs_arma</span>(x, mu_mu, sigma2_mu, a_sigma, b_sigma, R, burn_in)</span>
