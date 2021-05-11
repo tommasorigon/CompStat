@@ -334,7 +334,7 @@ DEMS<br>
 
 <div id="the-pima-indian-dataset-again" class="section level2">
 <h2>The Pima indian dataset (again)</h2>
-<p>As in <a href="exe/un_B1.html">Markdown B.1</a>, we will make use of the Pima indian dataset, so we perform the same operations here as well.</p>
+<p>As in <a href="exe/un_B1.html">Markdown B.1</a>, we will make use of the Pima indian dataset. We perform the same preliminary operations in this document as well.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Pima <span class="ot">&lt;-</span> <span class="fu">rbind</span>(MASS<span class="sc">::</span>Pima.tr, MASS<span class="sc">::</span>Pima.te) <span class="co"># Load the data</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(Pima<span class="sc">$</span>type <span class="sc">==</span> <span class="st">&quot;Yes&quot;</span>) <span class="co"># Binary response</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(type <span class="sc">~</span> . <span class="sc">-</span> <span class="dv">1</span>, <span class="at">data =</span> Pima) <span class="co"># Design matrix</span></span>
@@ -632,30 +632,30 @@ DEMS<br>
 <tbody>
 <tr class="odd">
 <td align="left">MALA</td>
-<td align="right">2.309326</td>
+<td align="right">2.3093259</td>
 <td align="right">3752.754</td>
 <td align="right">1625.043</td>
 <td align="right">0.5584519</td>
 </tr>
 <tr class="even">
 <td align="left">STAN</td>
-<td align="right">10.011838</td>
+<td align="right">10.0118380</td>
 <td align="right">30113.928</td>
 <td align="right">3007.832</td>
 <td align="right">1.0000000</td>
 </tr>
 <tr class="odd">
 <td align="left">Pólya-Gamma</td>
-<td align="right">9.466281</td>
+<td align="right">9.4662812</td>
 <td align="right">15217.760</td>
 <td align="right">1607.575</td>
 <td align="right">1.0000000</td>
 </tr>
 <tr class="even">
 <td align="left">MH Laplace + Rcpp</td>
-<td align="right">0.525048</td>
+<td align="right">0.5665009</td>
 <td align="right">1193.171</td>
-<td align="right">2272.499</td>
+<td align="right">2106.212</td>
 <td align="right">0.2730758</td>
 </tr>
 </tbody>
