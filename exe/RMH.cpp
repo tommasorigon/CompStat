@@ -12,7 +12,7 @@ double loglik_C(vec beta, vec y, mat X) {
 
 // [[Rcpp::export]] 
 double logpost_C(vec beta, vec y, mat X) {
-  return(loglik_C(beta, y, X) + sum( - dot(beta, beta) / 100));
+  return(loglik_C(beta, y, X) + sum( - dot(beta, beta) / 100.0));
 }
 
 // [[Rcpp::export]] 
