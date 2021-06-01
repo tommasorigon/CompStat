@@ -333,8 +333,8 @@ DEMS<br>
 
 
 <p>In this unit we discuss several approximate Bayesian methods that have been presented in the <a href="../slides/un_D2.pdf"><strong>slides of unit D.2</strong></a>.</p>
-<div id="simulated-dataset" class="section level2">
-<h2>Simulated dataset</h2>
+<div id="pima-indian-dataset" class="section level2">
+<h2>Pima indian dataset</h2>
 <p>We will make use of the Pima indian dataset again, as in the previous <a href="un_B1.html"><strong>Markdown document B.1</strong></a>. Importantly, note that in this document we will <strong>not standardize the predictors</strong> to make the computational problem more challenging.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Pima <span class="ot">&lt;-</span> <span class="fu">rbind</span>(MASS<span class="sc">::</span>Pima.tr, MASS<span class="sc">::</span>Pima.te)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(Pima<span class="sc">$</span>type <span class="sc">==</span> <span class="st">&quot;Yes&quot;</span>) <span class="co"># Binary outcome</span></span>
@@ -505,7 +505,7 @@ DEMS<br>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tic</span>()</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>fit_CAVI <span class="ot">&lt;-</span> <span class="fu">logit_CAVI</span>(y, X, B, b)</span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">toc</span>()</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fl">0.066</span> sec elapsed</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fl">0.065</span> sec elapsed</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>fit_CAVI<span class="sc">$</span>mu</span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>[<span class="dv">1</span>] <span class="sc">-</span><span class="fl">9.540464178</span>  <span class="fl">0.123125623</span>  <span class="fl">0.035466920</span> <span class="sc">-</span><span class="fl">0.008176711</span>  <span class="fl">0.007084735</span>  <span class="fl">0.082318586</span>  <span class="fl">1.312145381</span></span>
