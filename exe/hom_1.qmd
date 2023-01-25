@@ -4,14 +4,17 @@ subtitle: "Homework 1"
 author:
   name: Tommaso Rigon
   affiliation: DEMS
-output: 
-  html_document: 
+format:
+  html:
     theme: cosmo
-    df_print: kable
-    highlight: kate
     toc: true
-    toc_float: true
-    toc_collapsed: true
+    embed-resources: true
+    code-line-numbers: true
+    smooth-scroll: true
+    execute:
+      echo: true
+      message: false
+      warning: false
 editor_options: 
   chunk_output_type: console
 ---

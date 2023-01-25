@@ -4,21 +4,21 @@ subtitle: "Unit B.1: Optimal scaling & adaptive Metropolis"
 author:
   name: Tommaso Rigon
   affiliation: DEMS
-output: 
-  html_document: 
+format:
+  html:
     theme: cosmo
-    df_print: kable
-    highlight: kate
     toc: true
-    toc_float: true
-    toc_collapsed: true
+    embed-resources: true
+    code-line-numbers: true
+    smooth-scroll: true
+    execute:
+      echo: true
+      message: false
+      warning: false
 editor_options: 
   chunk_output_type: console
 ---
 
-```{r startup, include = FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = T, eval = T, message = F, warning = F, error = F, comment = NA, cache = F, include = T, R.options = list(width = 100), collapse = T, dpi = 200, fig.align = "center", fig.height = 6, fig.width = 8)
-```
 
 In this unit we discuss several (adaptive) MCMC strategies that have been presented in the [**slides of unit B.1**](../slides/un_B1.pdf). We will implement these proposals using the "famous" **Pima indian dataset**. The purpose of this unit is mainly presenting the implementation of the various MCMC algorithms and not making "inference" about their general performance. Refer to the nice paper by [Chopin & Ridgway (2017)](https://projecteuclid.org/journals/statistical-science/volume-32/issue-1/Leave-Pima-Indians-Alone--Binary-Regression-as-a-Benchmark/10.1214/16-STS581.full) for a more comprehensive discussion on this aspect. 
 

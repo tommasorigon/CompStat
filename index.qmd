@@ -45,16 +45,16 @@ The course is **modular**, meaning that depending on the background of the parti
 | Rcpp & RcppArmadillo | [Unit A.2](slides/un_A2.pdf) | [Code A.2](exe/un_A2.html) |
 | | **Advanced MCMC algorithms** | |
 | Optimal scaling & adaptive Metropolis |  [Unit B.1](slides/un_B1.pdf) |  [Code B.1](exe/un_B1.html) | 
-| MALA algorithm & Hamiltonian Monte Carlo |  [Unit B.2](slides/un_B2.pdf) | [Notebook B.2](exe/un_B2.html) | 
+| MALA algorithm & Hamiltonian Monte Carlo |  [Unit B.2](slides/un_B2.pdf) | [Code B.2](exe/un_B2.html) | 
 | *Homework* |  | [Homework 1](exe/hom_1.html)|  |
 | | **Data augmentation** | |
 | Missing data problems, Gibbs sampling and the EM algorithm |  [Unit C.1](slides/un_C1.pdf)| 
-| Data augmentation for probit and logit models |  [Unit C.2](slides/un_C2.pdf) | [Notebook B.2](https://colab.research.google.com/github/tommasorigon/CompStat/blob/main/notebook/un_B2.ipynb) 
+| Data augmentation for probit and logit models |  [Unit C.2](slides/un_C2.pdf) | [Code B.2](exe/un_B2.html) 
 | | | [EM logistic tutorial](https://github.com/tommasorigon/logisticVB/blob/master/em_logistic_tutorial.md) | 
-| *Homework* |  | [Homework 2](https://colab.research.google.com/github/tommasorigon/CompStat/blob/main/notebook/hom_2.ipynb)| |
+| *Homework* |  | [Homework 2](exe/hom_2.html)| |
 | | **Approximate Bayesian methods** | |
 | Laplace appr., Variational Bayes, and Expectation Propagation |  [Unit D.1](slides/un_D1.pdf) | 
-| Approximate methods for probit and logit models |  [Unit D.2](slides/un_D2.pdf) | [Notebook D.2](https://colab.research.google.com/github/tommasorigon/CompStat/blob/main/notebook/un_D2.ipynb) |
+| Approximate methods for probit and logit models |  [Unit D.2](slides/un_D2.pdf) | [Code D.2](exe/un_D2.html) |
 
 ## Essential references
 
