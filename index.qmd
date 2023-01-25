@@ -1,6 +1,6 @@
 ---
 title: "Computational Statistics II"
-subtitle: "Ph.D. in Economics, Statistics, and Data Science. University of Milano-Bicocca"
+subtitle: "Ph.D. in Economics, Statistics, and Data Science - University of Milano-Bicocca"
 author:
   name: Tommaso Rigon
   affiliation: DEMS
@@ -38,7 +38,7 @@ The course is **modular**, meaning that depending on the background of the parti
 
 ## Teaching material
 
-| Topic | Slides | Notebook |
+| Topic | Slides | Code |
 |---------------------|--------------------|------|
 | | **MCMC methods** | |
 | Metropolis-Hastings and Gibbs sampling | [Unit A.1](slides/un_A1.pdf) | [Code A.1](exe/un_A1.html) |
