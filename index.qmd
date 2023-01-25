@@ -42,7 +42,7 @@ The course is **modular**, meaning that depending on the background of the parti
 |---------------------|--------------------|------|
 | | **MCMC methods** | |
 | Metropolis-Hastings and Gibbs sampling | [Unit A.1](slides/un_A1.pdf) | [Code A.1](exe/un_A1.html) |
-| Rcpp & RcppArmadillo | [Unit A.2](slides/un_A2.pdf) | [Notebook A.2](https://colab.research.google.com/github/tommasorigon/CompStat/blob/main/notebook/un_A2.ipynb) |
+| Rcpp & RcppArmadillo | [Unit A.2](slides/un_A2.pdf) | [Code A.2](exe/un_A2.html) |
 | | **Advanced MCMC algorithms** | |
 | Optimal scaling & adaptive Metropolis |  [Unit B.1](slides/un_B1.pdf) |  [Notebook B.1](https://colab.research.google.com/github/tommasorigon/CompStat/blob/main/notebook/un_B1.ipynb) | 
 | MALA algorithm & Hamiltonian Monte Carlo |  [Unit B.2](slides/un_B2.pdf) | [Notebook B.2](https://colab.research.google.com/github/tommasorigon/CompStat/blob/main/notebook/un_B2.ipynb) | 

@@ -2697,7 +2697,8 @@ vertical-align: -.125em;
 <p><span class="math display">\[
 f(t \mid \alpha, \beta) = \frac{\alpha}{\beta}\left(\frac{t}{\beta}\right)^{\alpha - 1}\exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\right\},
 \quad h(t \mid \alpha, \beta) = \frac{\alpha}{\beta}\left(\frac{t}{\beta}\right)^{\alpha - 1},
-\quad S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\right\}.
+\]</span> and <span class="math display">\[
+S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\right\}.
 \]</span> The likelihood for this parametric model, under suitable censorship assumptions, is the following</p>
 <p><span class="math display">\[
 \mathscr{L}(\alpha, \beta; \textbf{t},\textbf{d}) \propto \prod_{i=1}^n h(t_i \mid \alpha, \beta)^{d_i} S(t_i \mid \alpha, \beta) = \prod_{i : d_i=1}f(t_i \mid \alpha, \beta) \prod_{i: d_i = 0}S(t_i \mid \alpha,\beta),
@@ -2850,7 +2851,7 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 <span id="cb11-4"><a href="#cb11-4"></a><span class="fu">tic</span>()</span>
 <span id="cb11-5"><a href="#cb11-5"></a>fit_MCMC <span class="ot">&lt;-</span> <span class="fu">RMH</span>(R, burn_in, t, d)</span>
 <span id="cb11-6"><a href="#cb11-6"></a><span class="fu">toc</span>()</span>
-<span id="cb11-7"><a href="#cb11-7"></a><span class="do">## 1.125 sec elapsed</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-7"><a href="#cb11-7"></a><span class="do">## 1.421 sec elapsed</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="analysis-of-the-results" class="level2">

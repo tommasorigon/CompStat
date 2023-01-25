@@ -49,12 +49,17 @@ We are interested in fitting a Bayesian model for estimating the survival functi
 $$
 f(t \mid \alpha, \beta) = \frac{\alpha}{\beta}\left(\frac{t}{\beta}\right)^{\alpha - 1}\exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\right\},
 \quad h(t \mid \alpha, \beta) = \frac{\alpha}{\beta}\left(\frac{t}{\beta}\right)^{\alpha - 1},
-\quad S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\right\}. 
-$$ The likelihood for this parametric model, under suitable censorship assumptions, is the following
+$$
+and
+$$
+S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\right\}. 
+$$ 
+The likelihood for this parametric model, under suitable censorship assumptions, is the following
 
 $$
 \mathscr{L}(\alpha, \beta; \textbf{t},\textbf{d}) \propto \prod_{i=1}^n h(t_i \mid \alpha, \beta)^{d_i} S(t_i \mid \alpha, \beta) = \prod_{i : d_i=1}f(t_i \mid \alpha, \beta) \prod_{i: d_i = 0}S(t_i \mid \alpha,\beta),
-$$ because $f(t \mid \alpha, \beta) = h(t\mid \alpha,\beta)S(t \mid \alpha, \beta)$.
+$$ 
+because $f(t \mid \alpha, \beta) = h(t\mid \alpha,\beta)S(t \mid \alpha, \beta)$.
 
 #### Inaccurate implementation
 

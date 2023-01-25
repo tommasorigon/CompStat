@@ -4,14 +4,14 @@ subtitle: "Unit A.2: Rcpp & RcppArmadillo"
 author:
   name: Tommaso Rigon
   affiliation: DEMS
-output: 
-  html_document: 
+format:
+  html:
     theme: cosmo
-    df_print: kable
-    highlight: kate
     toc: true
-    toc_float: true
-    toc_collapsed: true
+    toc-title: Table of contents
+    embed-resources: true
+    code-line-numbers: true
+    smooth-scroll: true
 editor_options: 
   chunk_output_type: console
 ---
