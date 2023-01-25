@@ -2777,7 +2777,7 @@ S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\rig
 </section>
 <section id="benchmarking" class="level4">
 <h4 class="anchored" data-anchor-id="benchmarking">Benchmarking</h4>
-<div class="cell" data-hash="un_A1_cache/html/unnamed-chunk-7_021477d1253ca4367cf449450557440f">
+<div class="cell" data-hash="un_A1_cache/html/unnamed-chunk-7_b3a3849ea29021a052183e3beeca4f44">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="fu">library</span>(rbenchmark) <span class="co"># Library for performing benchmarking</span></span>
 <span id="cb12-2"><a href="#cb12-2"></a></span>
 <span id="cb12-3"><a href="#cb12-3"></a><span class="fu">benchmark</span>(</span>
@@ -2790,8 +2790,8 @@ S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\rig
 <div class="cell-output cell-output-stdout">
 <pre><code>     test replications elapsed relative
 1 loglik1         1000   0.015    1.000
-2 loglik2         1000   0.065    4.333
-3 loglik3         1000   0.429   28.600</code></pre>
+2 loglik2         1000   0.059    3.933
+3 loglik3         1000   0.398   26.533</code></pre>
 </div>
 </div>
 </section>
@@ -2846,7 +2846,7 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 <span id="cb15-22"><a href="#cb15-22"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can now run the algorithm. We choose <code>R = 50000</code> and <code>burn_in = 5000</code>.</p>
-<div class="cell" data-hash="un_A1_cache/html/unnamed-chunk-10_2e212055e6f229b7b5969c850cc964c7">
+<div class="cell" data-hash="un_A1_cache/html/unnamed-chunk-10_03adebb64e55660c2cf27eab95d97580">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>R <span class="ot">&lt;-</span> <span class="dv">50000</span></span>
 <span id="cb16-2"><a href="#cb16-2"></a>burn_in <span class="ot">&lt;-</span> <span class="dv">5000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -2858,7 +2858,7 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 <span id="cb17-5"><a href="#cb17-5"></a>fit_MCMC <span class="ot">&lt;-</span> <span class="fu">RMH</span>(R, burn_in, t, d)</span>
 <span id="cb17-6"><a href="#cb17-6"></a><span class="fu">toc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>1.086 sec elapsed</code></pre>
+<pre><code>1.067 sec elapsed</code></pre>
 </div>
 </div>
 </section>
@@ -2890,7 +2890,7 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 </section>
 <section id="estimation-of-the-survival-curve" class="level3">
 <h3 class="anchored" data-anchor-id="estimation-of-the-survival-curve">Estimation of the survival curve</h3>
-<div class="cell" data-hash="un_A1_cache/html/unnamed-chunk-14_995fc1b62c7fa9984ec7f1f9f4305008">
+<div class="cell" data-hash="un_A1_cache/html/unnamed-chunk-14_58a62d1a4dadfdade7aecaedb0c169e7">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="co"># Grid of values on which the survival function is computed</span></span>
 <span id="cb24-2"><a href="#cb24-2"></a>grid <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">3700</span>, <span class="at">length =</span> <span class="dv">50</span>)</span>
 <span id="cb24-3"><a href="#cb24-3"></a></span>

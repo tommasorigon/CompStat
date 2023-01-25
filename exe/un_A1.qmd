@@ -8,18 +8,16 @@ format:
   html:
     theme: cosmo
     toc: true
-    toc-title: Table of contents
     embed-resources: true
     code-line-numbers: true
     smooth-scroll: true
     execute:
       echo: true
-      collapse: true
+      message: false
+      warning: false
 editor_options: 
   chunk_output_type: console
 ---
-
-
 
 In this markdown file it is described an implementation of a **random walk Metropolis-Hastings** algorithm for a Weibull survival model. Please refer to the [**slides of the unit A.1**](../slides/un_A1.pdf) for a more complete description of the algorithm and the model itself.
 

@@ -8,17 +8,16 @@ format:
   html:
     theme: cosmo
     toc: true
-    toc-title: Table of contents
     embed-resources: true
     code-line-numbers: true
     smooth-scroll: true
+    execute:
+      echo: true
+      message: false
+      warning: false
 editor_options: 
   chunk_output_type: console
 ---
-
-```{r startup, include = FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = T, eval = T, message = F, warning = F, error = F, comment = NA, cache = F, include = T, R.options = list(width = 100), collapse = T, dpi = 200, fig.align = "center", fig.height = 5, fig.width = 8)
-```
 
 ## Documentation
 
@@ -46,11 +45,11 @@ In first place, you **need a C++ compiler**. For `RcppArmadillo` you will also n
 
 If you are a **Windows user**, you just need to install [Rtools](https://cran.r-project.org/bin/windows/Rtools/), as described here:
 
-- https://thecoatlessprofessor.com/programming/cpp/installing-rtools-for-compiled-code-via-rcpp/
+- <https://thecoatlessprofessor.com/programming/cpp/installing-rtools-for-compiled-code-via-rcpp/>
 
 If you are a **Mac Os user**, unfortunately the procedure is slightly more complicate. You can refer to:
 
-- https://thecoatlessprofessor.com/programming/cpp/r-compiler-tools-for-rcpp-on-macos/
+- <https://thecoatlessprofessor.com/programming/cpp/r-compiler-tools-for-rcpp-on-macos/>
 
 If you are a **Linux user**, you probably already know what to do. In any event, this is the easieast case as you just need to run the following commands
 

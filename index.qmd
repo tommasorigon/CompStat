@@ -8,17 +8,17 @@ format:
   html:
     theme: cosmo
     toc: true
-    toc-title: Table of contents
     embed-resources: true
     code-line-numbers: true
     smooth-scroll: true
+    execute:
+      echo: true
+      message: false
+      warning: false
 editor_options: 
   chunk_output_type: console
 ---
 
-```{r startup, include = FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = T, eval = F, message = F, warning = F, error = F, comment = NA, cache = F, include = T, R.options = list(width = 100), collapse = T, dpi = 200, fig.align = "center", fig.height = 4, fig.width = 8)
-```
 
 Computational Statistics II is a course on **Bayesian computations**. The course covers both theoretical and programming aspects. 
 
@@ -44,9 +44,9 @@ The course is **modular**, meaning that depending on the background of the parti
 | Metropolis-Hastings and Gibbs sampling | [Unit A.1](slides/un_A1.pdf) | [Code A.1](exe/un_A1.html) |
 | Rcpp & RcppArmadillo | [Unit A.2](slides/un_A2.pdf) | [Code A.2](exe/un_A2.html) |
 | | **Advanced MCMC algorithms** | |
-| Optimal scaling & adaptive Metropolis |  [Unit B.1](slides/un_B1.pdf) |  [Notebook B.1](https://colab.research.google.com/github/tommasorigon/CompStat/blob/main/notebook/un_B1.ipynb) | 
-| MALA algorithm & Hamiltonian Monte Carlo |  [Unit B.2](slides/un_B2.pdf) | [Notebook B.2](https://colab.research.google.com/github/tommasorigon/CompStat/blob/main/notebook/un_B2.ipynb) | 
-| *Homework* |  | [Homework 1](https://colab.research.google.com/github/tommasorigon/CompStat/blob/main/notebook/hom_1.ipynb)|  |
+| Optimal scaling & adaptive Metropolis |  [Unit B.1](slides/un_B1.pdf) |  [Code B.1](exe/un_B1.html) | 
+| MALA algorithm & Hamiltonian Monte Carlo |  [Unit B.2](slides/un_B2.pdf) | [Notebook B.2](exe/un_B2.html) | 
+| *Homework* |  | [Homework 1](exe/hom_1.html)|  |
 | | **Data augmentation** | |
 | Missing data problems, Gibbs sampling and the EM algorithm |  [Unit C.1](slides/un_C1.pdf)| 
 | Data augmentation for probit and logit models |  [Unit C.2](slides/un_C2.pdf) | [Notebook B.2](https://colab.research.google.com/github/tommasorigon/CompStat/blob/main/notebook/un_B2.ipynb) 

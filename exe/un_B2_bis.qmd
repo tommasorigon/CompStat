@@ -1,0 +1,124 @@
+---
+title: "Computational Statistics II"
+subtitle: "Hamiltonian Monte Carlo: Gaussian example"
+author:
+  name: Tommaso Rigon
+  affiliation: DEMS
+output: 
+  html_document: 
+    theme: cosmo
+    df_print: kable
+    highlight: kate
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Hamiltonian Monte carlo
+
+```{r}
+# Log-posterior
+logpost <- function(theta) {
+  - 0.5 * theta^2
+}
+
+# Gradient of the logposterior
+lgradient <- function(theta) {
+  - theta
+}
+```
+
+## The Leapfrog method
+
+```{r}
+
+
+psi <- rnorm(1) # Auxiliary variables
+logK <- P^2 / 2 # Kinetic energy at the beginning of the trajectory
+    
+    # Make a half step for momentum at the beginning
+    theta_new <- theta
+    Pnew <- P + epsilon * lgradient(theta) / 2
+    
+    # Alternate full steps for position and momentum
+    for (l in 1:L) {
+      # Make a full step for the position
+      theta_new <- theta_new + epsilon * Pnew
+      # Make a full step for the momentum, except at end of trajectory
+      if (l != L) Pnew <- Pnew + epsilon * lgradient(theta_new)
+    }
+    
+    # Make a half step for momentum at the end.
+    Pnew <- Pnew + epsilon * lgradient(theta_new) / 2
+
+    # Negate momentum at end of trajectory to make the proposal symmetric
+    Pnew <- - Pnew
+
+    # Evaluate potential and kinetic energies at the end of trajectory
+    logpnew <- logpost(theta_new)
+    logKnew <- Pnew^2 / 2 #sum(Pnew^2) / 2
+
+```
+
+
+```{r hmc}
+HMC <- function(R, burn_in, epsilon, L) {
+  
+  out <- numeric(R)
+  theta <- 0
+  logp <- logpost(theta) # Initial log-posterior
+
+  # Starting the Gibbs sampling
+  for (r in 1:(burn_in + R)) {
+    
+    P <- rnorm(1) # Auxiliary variables
+    logK <- P^2 / 2 # Kinetic energy at the beginning of the trajectory
+    
+    # Make a half step for momentum at the beginning
+    theta_new <- theta
+    Pnew <- P + epsilon * lgradient(theta) / 2
+    
+    # Alternate full steps for position and momentum
+    for (l in 1:L) {
+      # Make a full step for the position
+      theta_new <- theta_new + epsilon * Pnew
+      # Make a full step for the momentum, except at end of trajectory
+      if (l != L) Pnew <- Pnew + epsilon * lgradient(theta_new)
+    }
+    
+    # Make a half step for momentum at the end.
+    Pnew <- Pnew + epsilon * lgradient(theta_new) / 2
+
+    # Negate momentum at end of trajectory to make the proposal symmetric
+    Pnew <- - Pnew
+
+    # Evaluate potential and kinetic energies at the end of trajectory
+    logpnew <- logpost(theta_new)
+    logKnew <- Pnew^2 / 2 #sum(Pnew^2) / 2
+    
+    # Accept or reject the state at end of trajectory, returning either
+    # the position at the end of the trajectory or the initial position
+    if (runif(1) < exp(logpnew - logp + logK - logKnew)) {
+      logp <- logpnew
+      theta <- theta_new # Accept the value
+    }
+
+    # Store the values after the burn-in period
+    if (r > burn_in) {
+      out[r - burn_in] <- theta
+    }
+  }
+  out
+}
+```
+
+```{r}
+hist(HMC(R = 10^4, burn_in = 100, epsilon = 0.1, L = 10), freq=F, breaks=100); curve(dnorm(x), add=T)
+```
+

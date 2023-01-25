@@ -1,11 +1,13 @@
 ---
 title: "Computational Statistics II"
-subtitle: "Unit A.2: Rcpp & RcppArmadillo"
+subtitle: "Unit A.1: Metropolis-Hastings and Gibbs sampling"
 author: "Tommaso Rigon"
 format:
   revealjs:
-    smaller: true # reduce the font
-    theme: default # alternative themes (subset): default, night
+    html-math-method: katex
+    callout-appearance: minimal
+    smaller: true
+    theme: simple # alternative themes (subset): default, night
     embed-resources: true
     slide-number: true
     scrollable: true # Prevent overflow, slides are scrollable if too long
@@ -13,21 +15,54 @@ format:
     footer: "[Home page](https://tommasorigon.github.io/CompStat/)"
 ---
 
-## Quarto
+## Unit A.1
 
-Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
+::: callout-note
+#### Topics
+-   Markov Chain Monte Carlo (MCMC)
+-   The Metropolis--Hastings algorithm
+-   The Gibbs sampling algorithm
+-   Writing clean and efficient **R** code
+:::
 
-## Bullets
+::: callout-tip
+#### Main references
+- Robert, C. P., and Casella, G. (2004). Monte Carlo Statistical Methods. Springer.
+- Roberts, G. O., and Rosenthal, J. S. (2004). General state space Markov chains and MCMC algorithms. Probability Surveys, 1(1), 20–71.
+ - Tierney, L. (1994). Markov chains for exploring posterior distributions. Annals of Statistics, 22(4), 1701-176.
+:::
 
-When you click the **Render** button a document will be generated that includes:
+Associated **R** code is available on the website of the course.
 
--   Content authored with markdown
--   Output from executable code
+## Bayesian computations
 
-## Code
+Over the past 30 years, Markov Chain Monte Carlo methods (MCMC) methods have **revolutionized** Bayesian statistics.
 
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+Bayesian computational statistics is nowadays a lively and mature research field, compared to the early days. Still, there are several open questions. 
 
-```{r}
-1 + 1
-```
+:::callout-tip
+#### **Alan Gelfand** (ISBA bullettin, 2011): 
+
+"Arguably the biggest challenge is in computation. If MCMC is no longer viable for the problems people want to address, then what is the role of INLA, of variational methods, of ABC approaches?"
+
+Link: <https://www.stat.berkeley.edu/~aldous/157/Papers/Bayesian_open_problems.pdf>
+:::
+
+## Bayesian inference (recap)
+
+Let $\bm{X}$ be the data, following some distribution $\pi(\bm{X} \mid \bm{\theta})$, i.e. the **likelihood**, with $\bm{\theta} \in \Theta \subseteq \mathbb{R}^p$ being an unknown set of parameters. 
+
+Let $\pi(\bm{\theta})$ be the **prior distribution** associated to $\bm{\theta}$.
+
+In Bayesian analysis, inference is based on the **posterior distribution** for $\bm{\theta}$, defined as
+$$
+\pi(\bm{\theta} \mid \bm{X}) = \frac{\pi(\bm{\theta}) \pi(\bm{X} \mid \bm{\theta})}{\int_\Theta\pi(\bm{\theta}) \pi(\bm{X} \mid \bm{\theta}) \mathrm{d} \bm{\theta}}.
+$$
+
+:::callout-warning
+#### Key issue
+
+The **normalizing constant**, i.e. the above integral, is often **intractable** $\implies$ no analytical solutions, beyond conjugate cases.
+
+Numerical approximations of $\int_\Theta\pi(\bm{\theta}) \pi(\bm{X} \mid \bm{\theta}) \mathrm{d} \bm{\theta}$ are highly unstable, especially in high dimensions $\implies$ the `integrate` **R** function will not work in most cases.
+:::
