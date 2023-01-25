@@ -1,6 +1,6 @@
 ---
 title: "Computational Statistics II"
-subtitle: "Unit A.1: Metropolis-Hastings in R"
+subtitle: "Unit A.1: R programming and MCMC"
 author:
   name: Tommaso Rigon
   affiliation: DEMS
@@ -19,7 +19,179 @@ editor_options:
   chunk_output_type: console
 ---
 
-In this markdown file it is described an implementation of a **random walk Metropolis-Hastings** algorithm for a Weibull survival model. Please refer to the [**slides of the unit A.1**](../slides/un_A1.pdf) for a more complete description of the algorithm and the model itself.
+## Autoregressive processes (example)
+
+The following code allows to simulate from an autoregressive process. Autoregressive processes provide a simple illustration of **Markov chains** on continuous state-space.
+
+Let $Y^{(0)} \sim N(10, 1)$ and let us define
+
+$$
+Y^{(r)} = \rho Y^{(r-1)} + \epsilon^{(r)}, \qquad \phi \in \mathbb{R},
+$$
+
+with the error terms $\epsilon^{(r)}$ being iid according to a standard Gaussian $\text{N}(0,1)$. 
+
+Then the sequence of $Y^{(r)}$ forms indeed a Markov chain and the **transition density** is such that
+
+$$
+(y^{(r)} \mid y^{(r-1)})  \sim \text{N}(\rho y^{(r-1)}, 1).
+$$ 
+
+If the parameter $|\rho| < 1$ then the Markov chain has a more "**stable**" behaviour (i.e. the process is stationary).
+
+```{r}
+R <- 300
+
+# Stationary process
+set.seed(123)
+rho <- 0.5
+y_stat <- numeric(R + 1)
+y_stat[1] <- rnorm(1, 30, 1)
+for(r in 1:R){
+    y_stat[r + 1] = rho * y_stat[r] + rnorm(1)
+}
+
+plot(y_stat, type = "l")
+```
+
+```{r}
+# Non-stationary process
+set.seed(123)
+rho <- 1
+y_nstat <- numeric(R + 1)
+y_nstat[1] <- rnorm(1, 100, 1)
+for(r in 1:R){
+    y_nstat[r + 1] = rho * y_nstat[r] + rnorm(1)
+}
+plot(y_nstat, type = "l")
+```
+
+## Gaussian example
+
+Suppose we wish to simulate from a Gaussian distribution $\text{N}(\mu, \sigma^2)$ using a MH algorithm, whose density is $\pi(y)$.
+
+This is obviously a **toy example**, because in practice one would just use `rnorm`.  For the proposal distribution $q(y^* \mid y)$, we can use a **uniform random walk**, namely
+$$
+y^* = y + u, \qquad u \sim \text{Unif}(-\epsilon, \epsilon).
+$$
+The choice of $\epsilon > 0$ will have an impact on the algorithm, as we shall see.
+
+Random walks are **symmetric** proposals distributions, so $q(y^* \mid y) = q(y \mid y^*)$. This means the acceptance probability $\alpha$ is equal to
+$$
+\alpha(y^*, y) = \min\left\{1, \frac{\pi(y^*)} {\pi(y)}\right\}.
+$$
+
+The implementation in **R** for a generic Gaussian with mean `mu` and standard deviation `sig` is the following code. Morerover, here `x0` is the starting value and `ep` corresponds to $\epsilon$.
+
+```{r}
+norm_mcmc <- function(R, mu, sig, ep, x0) {
+    
+    # Initialization
+    out <- numeric(R + 1)
+    out[1] <- x0
+    
+    # Beginning of the chain
+    x <- x0
+    # Metropolis algorithm
+    for(r in 1:R){
+        # Proposed values
+        xs     <- x + runif(1, -ep, ep)
+        # Acceptance probability
+        alpha  <- min(dnorm(xs, mu, sig) / dnorm(x, mu, sig), 1)
+        # Acceptance / rejection step
+        accept <- rbinom(1, size = 1, prob = alpha)
+    
+        if(accept == 1) {
+            x <- xs
+        }
+        out[r + 1] <- x
+    }
+    out 
+}
+```
+
+```{r}
+par(mfrow = c(2, 2))
+
+set.seed(123)
+sim1 <- norm_mcmc(1000, mu = 2, sig = 5, ep = 100, x0 = 50)
+sim2 <- norm_mcmc(1000, mu = 2, sig = 5, ep = 50, x0 = 50)
+sim3 <- norm_mcmc(1000, mu = 2, sig = 5, ep = 10, x0 = 50)
+sim4 <- norm_mcmc(1000, mu = 2, sig = 5, ep = 1, x0 = 50)
+```
+
+
+```{r}
+par(mfrow = c(2,2))
+plot(sim1, type = "l", main = "ep = 100", ylab = "y", xlab = "iteration")
+plot(sim2, type = "l", main = "ep = 50", ylab = "y", xlab = "iteration")
+plot(sim3, type = "l", main = "ep = 10", ylab = "y", xlab = "iteration")
+plot(sim4, type = "l", main = "ep = 1", ylab = "y", xlab = "iteration")
+```
+
+```{r}
+par(mfrow = c(2, 2))
+acf(sim1)
+acf(sim2)
+acf(sim3)
+acf(sim4)
+```
+
+```{r}
+# Simulate the MH chain
+sim <- norm_mcmc(50000, mu = 2, sig = 5, ep = 10, x0 = 50)
+
+# Identify a burn-in period
+burn_in <- 1:200
+sim <- sim[-c(burn_in)]
+# Plot the results
+hist(sim, breaks = 100, freq = FALSE)
+curve(dnorm(x, 2, 5), add = T) # This is usually not known!
+```
+
+```{r}
+par(mfrow = c(2,2))
+acf(sim1)
+acf(sim2)
+acf(sim3)
+acf(sim4)
+```
+
+## Example: bivariate Gaussian distribution
+
+```{r}
+dbvnorm <- function(x, rho) {
+    exp(-(x[1]^2 - 2 * rho * x[1] * x[2] + x[2]^2) / (2 * (1 - rho^2)))
+}
+```
+
+```{r}
+bvnorm_mcmc <- function(R, rho, ep, x0) {
+    out <- matrix(0, R + 1, 2)
+    out[1, ] <- x0
+    x <- x0
+    for(r in 1:R){
+        for(j in 1:2){
+            xs <- x
+            xs[j] <- x[j] + runif(1, -ep[j], ep[j])
+            alpha <- min(dbvnorm(xs, rho) / dbvnorm(x, rho), 1) # Acceptance probability
+            accept <- rbinom(1, size = 1, prob = alpha) # Acceptance / rejection step
+            if(accept == 1) {
+                x[j] <- xs[j]
+            }
+        }
+        out[r + 1, ] <- x
+    }
+    out 
+}
+```
+
+```{r}
+set.seed(123)
+sim <- bvnorm_mcmc(1000, rho = 0.85, ep = c(2, 2), x0 = c(10, 10))
+plot(sim, type = "b")
+```
+
 
 ## The `hearth` dataset
 

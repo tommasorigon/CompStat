@@ -34,6 +34,8 @@ format:
 
 Associated **R** code is available on the website of the course.
 
+# Bayesian computations
+
 ## Bayesian computations
 
 Over the past 30 years, Markov Chain Monte Carlo methods (MCMC) methods have **revolutionized** Bayesian statistics.
@@ -41,7 +43,7 @@ Over the past 30 years, Markov Chain Monte Carlo methods (MCMC) methods have **r
 Bayesian computational statistics is nowadays a lively and mature research field, compared to the early days. Still, there are several open questions. 
 
 :::callout-tip
-#### **Alan Gelfand** (ISBA bullettin, 2011): 
+#### **Alan Gelfand** (ISBA bullettin, 2011)
 
 "Arguably the biggest challenge is in computation. If MCMC is no longer viable for the problems people want to address, then what is the role of INLA, of variational methods, of ABC approaches?"
 
@@ -66,3 +68,867 @@ The **normalizing constant**, i.e. the above integral, is often **intractable** 
 
 Numerical approximations of $\int_\Theta\pi(\bm{\theta}) \pi(\bm{X} \mid \bm{\theta}) \mathrm{d} \bm{\theta}$ are highly unstable, especially in high dimensions $\implies$ the `integrate` **R** function will not work in most cases.
 :::
+
+## Bayesian inference using sampling
+
+:::.callout-tip
+#### Key solution
+
+It is sometimes possible to **sample** from the posterior distribution even without knowing the normalizing constant. 
+:::
+
+If we can get **random samples** $\bm{\theta}^{(1)}, \dots,\bm{\theta}^{(R)}$ from the posterior distribution, then we can approximate any functional of interest, i.e.
+$$
+\mathbb{E}(g(\bm{\theta}) \mid \bm{X}) \approx \frac{1}{R}\sum_{r=1}^R g(\bm{\theta}^{(r)}).
+$$
+
+If $\bm{\theta}^{(1)}, \dots,\bm{\theta}^{(R)}$ were **independent** samples from the posterior distribution, this approximation would be called **Monte Carlo integration**. 
+
+Monte Carlo integration is justified by the **law of large numbers**.
+
+In this course, we will consider samples $\bm{\theta}^{(1)}, \dots,\bm{\theta}^{(R)}$ that are **dependent** and follow a Markov Chain $\implies$ Markov Chain Monte Carlo (MCMC).
+
+
+## Example: autoregressive process AR(1)
+
+**Autoregressive** processes provide a simple illustration of **Markov chains** on continuous state-space.
+
+Let $Y^{(0)} \sim N(30, 1)$ and let us define
+$$
+Y^{(r)} = \rho Y^{(r-1)} + \epsilon^{(r)}, \qquad \rho \in \mathbb{R},
+$$
+with the error terms $\epsilon^{(r)}$ being iid according to a standard Gaussian $\text{N}(0,1)$. 
+
+Then the sequence of $Y^{(r)}$ forms indeed a Markov chain and the **transition density** is such that
+$$
+(y^{(r)} \mid y^{(r-1)})  \sim \text{N}(\rho y^{(r-1)}, 1).
+$$ 
+
+If the parameter $|\rho| < 1$ then the Markov chain has a more "stable" behaviour. 
+
+## Example: autoregressive processes AR(1)
+
+```{r}
+#| echo: false
+R <- 300
+
+# Stationary process
+set.seed(123)
+rho <- 0.5
+y_stat <- numeric(R + 1)
+y_stat[1] <- rnorm(1, 30, 1)
+for(r in 1:R){
+    y_stat[r + 1] = rho * y_stat[r] + rnorm(1)
+}
+
+plot(y_stat, type = "l")
+```
+
+
+## Invariant distribution
+\bi
+\item An increased level of stability of a Markov chain occurs when the latter admits an \empb{invariant} or \empr{stationary} probability distribution.
+
+\item A probability density $\pi(\bm{y})$ is invariant for a Markov chain with kernel $k$ if
+$$
+\pi(\bm{y}^*) = \int k(\bm{y}^* \mid \bm{y})\pi(\bm{y})\mathrm{d}\bm{y}.
+$$
+\item This is to say that the \empb{marginal} distributions of $\bm{Y}^{(r)}$ and  $\bm{Y}^{(r + 1)}$ are the same and are equal to $\pi(\bm{y})$, although $\bm{Y}^{(r)}$ and  $\bm{Y}^{(r + 1)}$ remain \empr{dependent}.
+\item Roughly speaking, if a Markov chain admits a stationary distribution + some technical conditions, then for $R$ large enough the chain ``stabilizes'' around the invariant law.
+\item In the previous $\textsc{ar}(1)$ example the stationary distribution is $\text{N}(0, 1 / (1 - \rho^2))$. 
+\ei
+\end{frame}
+
+\begin{frame}{Invariant distribution}
+\bi
+\item Not every Markov chain admits a stationary law. However, the Markov chains constructed for sampling purposes should always converge to an invariant distribution.
+\item Indeed, in Markov Chain Monte Carlo the stationary distribution $\pi(\bm{y})$ represents the \empr{target density} from which we wish to simulate. 
+\item Then, we will make use of the following approximation 
+$$
+\int g(\bm{y}) \pi(\bm{y})\mathrm{d}\bm{y} \approx \frac{1}{R}\sum_{r=1}^R g(\bm{y}^{(r)}),
+$$
+where $\bm{y}^{(1)}, \dots, \bm{y}^{(R)}$ are generated according to a Markov chain, with $\bm{y}^{(0)} \sim \pi(\bm{y})$. 
+\item How to construct a Markov chain that converges to the desired density $\pi(\bm{y})$?
+\item Before delving into this key problem, let us briefly review the assumptions under which this approximation is a reasonable one. 
+\ei
+\end{frame}
+
+\begin{frame}{Regularity conditions}
+\bi
+\item We will consider Markov chains that are \empb{irreducible}, \empr{aperiodic}, and \empb{Harris recurrent}.
+\item A rigorous presentation of these properties is beyond the aims of this course, so we offer here only a brief description in the \empr{discrete case} to help the intuition.
+
+\item For a more detailed treatment, see Chapter 6 of Robert and Casella (2004). 
+\item \empb{Irreducibility}. The chain is irreducible if it does not ``get stuck'' in a local region of the sample space. In the discrete case the chain is irreducible if all states are connected. 
+\item \empr{Aperiodicity}. The chain is aperiodic if it does not has any deterministic cycle.
+\item \empb{Harris recurrent}. The chain is (Harris) recurrent if it visits any region of the sample space ``sufficiently often''.
+
+% \item \empr{\underline{Remark}}. In the definition of Robert and Casella (2004), a recurrent chain is necessarily irreducible, so the first property can be omitted. 
+\ei
+\end{frame}
+
+\begin{frame}{Irreducibility}
+\bi
+\item The aforementioned properties are easy to formalize in the \empr{discrete} setting, namely when the values of the Markov chain are $Y^{(r)} \in \{1, 2,\dots\}$. 
+
+\item The \empb{first passage time} is the first $r$ for which the chain is equal to $j$, namely:
+$$
+\tau_j = \inf\{r \ge 1 : Y^{(r)} = j\},
+$$
+where by convention we let $\tau_j = \infty$ if $Y^{(r)} \neq j$ for every $r \ge 1$. 
+\item Moreover, let us denote the \empr{probability of return} to $j$ in a finite number of step, starting from $j'$
+$$
+\mathbb{P}(\tau_j < \infty \mid y^{(0)} = j').
+$$
+\item Hence, the chain is \empb{irreducible} if 
+$\mathbb{P}(\tau_j < \infty \mid y^{(0)} = j') > 0$ for all $j, j' \in \mathbb{N}$. 
+\ei
+\end{frame}
+
+\begin{frame}{Aperiodicity}
+\bi
+\item Consider the two-state chain with \empb{transition matrix}
+$$
+P = \begin{pmatrix} 0 & 1 \\ 1 & 0 \\ \end{pmatrix}.
+$$
+\item The two-step ahead transition matrix is $P^2 = I$, so  $P^{2r} = I$ and $P^{2r + 1} = P$ for all $r \ge 1$. 
+\item Hence, due to periodicity this chain is \empr{failing to converge} anywhere.
+\item In the discrete case, we call a state $j$ \empb{aperiodic} if the set
+$$
+\{r \ge 1 : [P^r]_{jj} > 0 \}
+$$
+has no common divisor other than $1$.
+
+\item A chain is \empb{aperiodic} if all its states are aperiodic. 
+\ei
+\end{frame}
+
+\begin{frame}{Harris recurrence}
+\bi
+\item Informally, a state $j$ of an \empb{irreducible} Markov chain is recurrent when it is visited by the chain ``infinitely often''.
+\item More formally, in the discrete setting a state $j \in \mathbb{N}$ is \empb{recurrent} if and only if
+$$
+\mathbb{P}(\tau_j < \infty \mid y^{(0)} = j) = \mathbb{P}(Y^{(r)} = j \text{ for infinitely many } r \mid y^{(0)} = j) = 1.
+$$
+\item The above a definition, with the necessary adjustments, is actually a \empr{sufficient condition} for recurrence in the continuous case.
+
+\item Indeed, in the continuous case recurrence is defined in terms of the \empb{average number of passages} on a Borel set, which must be divergent. 
+\item The stronger ``\empb{Harris}'' recurrence condition is mostly needed to fix measure-theoretic pathologies. 
+
+\ei
+\end{frame}
+
+\begin{frame}{Invariant measures}
+\bi
+\item A Markov chain that is aperiodic and Harris recurrent displays a quite stable behaviour, so one may wonder if it admits an \empr{invariant} distribution. 
+\item In general, the answer is no: the Gaussian random walk is an example. 
+\item Indeed, we call \empb{Harris positive} a Markov chain which is Harris recurrent and admits an invariant probability distribution.
+\item In the discrete case, this occurs if and only if $\mathbb{E}(\tau_j \mid y^{(0)} = j) < \infty$. 
+\item However, something can be said about the existence of invariant measures in general. 
+\ei
+\begin{theorem} If $(\bm{Y}^{(r)})_{r \ge 1}$ is a recurrent chain, there exists an invariant $\sigma$-finite measure which is unique up to a multiplicative factor.
+\end{theorem}
+\bi
+\item Unfortunately, such an invariant measure is not necessarily a probability measure!
+\ei
+\end{frame}
+
+\begin{frame}{Reversibility and detailed balance}
+\bi
+\item What follows is a popular \empb{sufficient condition} to ensure a recurrent chain is also \empr{positive recurrent}. That is, it admits an invariant probability distribution. 
+\item Interestingly enough, such a condition has also a quite intuitive interpretation.
+\item We call a Markov chain $(\bm{Y}^{(r)})_{r \ge 1}$ \empb{reversible} if the distribution of $\bm{Y}^{(r)}$ conditionally on $\bm{Y}^{(r+1)}$ is the same as the distribution of $\bm{Y}^{(r+1)}$ conditionally on $\bm{Y}^{(r)}$.
+\item A Markov chain $(\bm{Y}^{(r)})_{r \ge 1}$ with transition kernel $k$ satisfies the \empb{detailed balance} condition if there exists a function $f$ such that
+$$
+k(\bm{y} \mid \bm{y}^*)f(\bm{y}) = k(\bm{y}^* \mid \bm{y})f(\bm{y}^*).
+$$
+\begin{theorem} If $(\bm{Y}^{(r)})_{r \ge 1}$ satisfies the detailed balance condition with $\pi$ a probability density function, then $\pi$ is the invariant (stationary) density and the chain is reversible. 
+\end{theorem}
+\ei
+\end{frame}
+
+
+\begin{frame}{Convergence to equilibrium}
+\bi
+\item From now on, we will always make use of the  \empr{aperiodicity} and \empb{Harris positivity} properties, assuming the existence of a stationary probability density $\pi$.
+\item The following result establishes that a chain converges in \empb{total variation} to its invariant measures as $r \rightarrow \infty$.
+\item Importantly, this occurs regardless the initial conditions $\bm{Y}^{(0)} \sim \pi_0$.
+\ei
+
+\begin{theorem} Let the Markov chain $(\bm{Y}^{(r)})_{r \ge 1}$ be aperiodic and Harris positive, with $\bm{Y}_0 \sim \pi_0$. Moreover let $\pi_r$ be the marginal probability density of $Y^{(r)}$. Then
+$$
+\lim_{r \rightarrow \infty} \left| \pi_r(\bm{y}) - \pi(\bm{y})\right|_{\textsc{tv}} = 0.
+$$
+Furthermore  $\left| \pi_r(\bm{y}) - \pi(\bm{y})\right|_{\textsc{tv}}$ is decreasing in $r$. 
+\end{theorem}
+
+\end{frame}
+
+\begin{frame}{Ergodic theorem}
+\bi
+\item The \empb{Ergodic Theorem} is essentially the equivalent of the law of large numbers for Markov chains. It is the main justification for the usage of \textsc{mcmc} methods.
+\item What follows is a slightly simplified version of it, which is amenable for our purposes.
+\item Again, the following result holds irrespectively on the initial conditions $\bm{Y}^{(0)} \sim \pi_0$. 
+\ei
+
+\begin{theorem}[Ergodic Theorem] Let the Markov chain $(\bm{Y}^{(r)})_{r \ge 1}$ be Harris positive with stationary distribution $\pi$. Let the function $g$ be integrable w.r.t. to $\pi$. Then
+$$
+\frac{1}{R}\sum_{r=1}^R g(\bm{Y}^{(r)}) \longrightarrow \int g(\bm{y}) \pi(\bm{y}) \mathrm{d}\bm{y}, \qquad R \rightarrow \infty,
+$$
+almost surely. 
+\end{theorem}
+
+\end{frame}
+
+\begin{frame}{Practical considerations I}
+\bi
+\item \empb{Sampling} the path of a Markov chain is straightforward from the definition.
+\item We firstly simulate $\bm{Y}^{(0)} \sim \pi_0$. Then we simulate the subsequent values $(\bm{Y}^{(r+1)} \mid \bm{Y}^{(r)})$ according to the transition kernel $k$, assuming it is easy to do so. 
+
+\item If a Markov chain has a \empr{stationary distribution} $\pi$, then simulating from a Markov chain leads to a practical strategy for simulating from $\pi$ as well. 
+
+\item Because of the previous results, the distribution $\pi_r$ of $\bm{Y}^{(r)}$ will eventually \empb{converge} to the stationary law $\pi$ we wish to simulate. 
+
+\item Thus, $\bm{Y}^{(B)}$ for $B > 0$ large enough can be regarded as a sample from $\pi$. Moreover, the subsequent values can be also regarded as samples from $\pi$, the invariant distribution.
+
+\ei
+\end{frame}
+
+\begin{frame}{Practical considerations II}
+\bi
+\item The values $\bm{Y}^{(1)}, \bm{Y}^{(2)}, \dots, \bm{Y}^{(B)}$ represent the so-called \empr{burn-in} period, namely the values the chain needs to reach convergence.
+\item The burn-in values should be \empr{discarded}. The choice of $B$ is not always easy in practice.
+\item Hence, the approximations of functionals of interest are based on the values
+$$
+\int g(\bm{y}) \pi(\bm{y})\mathrm{d}\bm{y} \approx \frac{1}{R - B}\sum_{r=B + 1}^R g(\bm{y}^{(r)}),
+$$
+which once again we emphasize it relies on the \empb{Ergodic Theorem}.  
+\item What we are still missing are some practical Markov chains algorithms that indeed target a specific stationary distribution.
+\ei
+\end{frame}
+
+
+\begin{frame}{Metropolis-Hastings algorithm I}
+    \bi
+    \item We finally introduce our first first Markov Chain Monte Carlo \textsc{mcmc} method: the \empb{Metropolis-Hastings} algorithm (\textsc{mh}).
+    \item This idea goes back to Metropolis et al. (1953) and Hastings (1970).
+    \item Like the acceptance-rejection algorithm, the \textsc{mh} is based on proposing values sampled from an \empr{instrumental proposal} distribution.
+    \item The proposed values are then accepted with a certain probability that reflects how likely it is that they are from the target density $\pi(\bm{y})$.
+    \item Under mild conditions, this ensures that the chain will converge to the target density $\pi(\bm{y})$, which is shown to be the stationary distribution. 
+    \ei
+\end{frame}
+
+
+\begin{frame}{Metropolis-Hastings algorithm II}
+\bi
+    \item Set the first value of the chain $\bm{y}^{(0)}$ to some (reasonable) value.
+\ei
+    
+    \bb{At the $r$th value of the chain}
+    
+    \bi
+    \item Let $\bm{y} = \bm{y}^{(r)}$ be the current status of the chain.
+    \item Sample $\bm{y}^*$ from a \empb{proposal distribution} $q(\bm{y}^* \mid \bm{y})$.
+    \item Compute the \empb{acceptance probability}, defined as
+    $$
+    \alpha(\bm{y}^*, \bm{y}) = \min\left\{1, \frac{\pi(\bm{y}^*)} {\pi(\bm{y})}
+    \frac{q(\bm{y} \mid \bm{y}^*)} {q(\bm{y}^* \mid \bm{y})}\right\} = \min\left\{1, \frac{\tilde{\pi}(\bm{y}^*)} {\tilde{\pi}(\bm{y})}
+    \frac{q(\bm{y} \mid \bm{y}^*)} {q(\bm{y}^* \mid \bm{y})}\right\}.
+    $$
+    
+    \item With probability $\alpha = \alpha(\bm{y}^*, \bm{y})$, \empb{update the status} of the chain and set  $\bm{y} \leftarrow \bm{y}^*$.
+    \ei
+    \eb
+    \bi
+\item \empr{Key result}. We do not need to know the normalizing constant $K$ of $\pi(\bm{y}) = K \tilde{\pi}(\bm{y})$, because it simplifies in the above ratio.
+\ei
+
+\end{frame}
+
+
+
+\begin{frame}{Detailed balance and reversibility of the \textsc{mh}}
+\bi
+\item The \empb{transition kernel} of the \textsc{mh} algorithm is therefore the following ``mixture''
+$$
+k(\bm{y}^* \mid \bm{y}) = \alpha(\bm{y}^*, \bm{y})q(\bm{y}^* \mid \bm{y}) + \delta_{\bm{y}^*}(\bm{y}) \int q(\bm{y}^* \mid \bm{s}) \{1 - \alpha(\bm{y}^* \mid \bm{s})\} \mathrm{d}\bm{s},
+$$
+where $\delta_{\bm{y}^*}(\bm{y})$ is a point mass at $\bm{y}^*$.
+\item \empr{\underline{Exercise I}}. Using the definition of the acceptance probability, verify the following condition:
+$$
+\pi(\bm{y}) \alpha(\bm{y}^*, \bm{y})q(\bm{y}^* \mid \bm{y}) = \pi(\bm{y}^*) \alpha(\bm{y}, \bm{y}^*)q(\bm{y} \mid \bm{y}^*).
+$$
+\item \empr{\underline{Exercise II}}. From the above equations, conclude that
+$$
+k(\bm{y} \mid \bm{y}^*)\pi(\bm{y}) = k(\bm{y}^* \mid \bm{y})\pi(\bm{y}^*),
+$$
+corresponding to the \empb{detailed balance} condition. 
+\item Hence, $\pi(\bm{y})$ is the \empb{stationary} law of a \textsc{mh} process and the chain is \empb{reversible}. 
+\ei
+\end{frame}
+
+\begin{frame}{Convergence properties}
+\bi
+\item The existence of an invariant stationary distribution is quite a strong theoretical result. 
+
+\item However, one should also check for \empb{irreducibility}, \empr{aperiodicity} and \empb{Harris recurrence} of the \textsc{mh} chain. 
+\item This depends on the proposal distribution $q(\bm{y}^* \mid \bm{y})$ and the stationary density $\pi(\bm{y})$, although it is tipically true under very mild conditions. 
+\item Quite general \empr{sufficient conditions} for ergodicity are given in Chapter 7.3.2 of Robert and Casella (2004). 
+\item Failure of \textsc{mh} algorithm typically occurs in presence of a disconnected support for $\pi(\bm{y})$ and / or if the proposal  $q(\bm{y}^* \mid \bm{y})$ is not able to explore the support of $\pi(\bm{y})$. 
+\ei
+\end{frame}
+
+\begin{frame}{An important caveat}
+\includegraphics[width=\textwidth]{casella.png}
+\bi
+\item This snapshot is taken from Chapter 6 of the textbook Robert, C. P., and Casella, G. (2009). \emph{Introducing Monte Carlo methods with R}. Springer.
+\item In this notation $f$ is the stationary distribution. 
+\ei
+
+\end{frame}
+
+
+\begin{frame}{Example: Gaussian distribution}
+\bi
+\item Suppose we wish to simulate from a Gaussian distribution $\text{N}(\mu, \sigma^2)$ using a \textsc{mh} algorithm, whose density is $\pi(y)$.
+\item This is obviously a \empb{toy example}, because in practice one would just use \texttt{rnorm}. 
+\item For the proposal distribution $q(y^* \mid y)$, we can use a \empb{uniform random walk}, namely
+$$
+y^* = y + u, \qquad u \sim \text{Unif}(-\epsilon, \epsilon).
+$$
+The choice of $\epsilon > 0$ will have an impact on the algorithm, as we shall see.
+\item Random walks are \empr{symmetric} proposals distributions, so $q(y^* \mid y) = q(y \mid y^*)$.
+\item This means the acceptance probability $\alpha$ is equal to
+$$
+\alpha(y^*, y) = \min\left\{1, \frac{\pi(y^*)} {\pi(y)}\right\}.
+$$
+\ei
+    
+\end{frame}
+
+\begin{frame}[fragile]{Example: Gaussian distribution}
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+norm_mcmc <- function(R, mu, sig, ep, x0) {
+    # Initialization
+    out <- numeric(R + 1)
+    out[1] <- x0
+    # Beginning of the chain
+    x <- x0
+    # Metropolis algorithm
+    for(r in 1:R){
+        # Proposed values
+        xs     <- x + runif(1, -ep, ep)
+        # Acceptance probability
+        alpha  <- min(dnorm(xs, mu, sig) / dnorm(x, mu, sig), 1)
+        # Acceptance / rejection step
+        accept <- rbinom(1, size = 1, prob = alpha)
+        if(accept == 1) {
+            x <- xs
+        }
+        out[r + 1] <- x
+    }
+    out 
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}{Example: Gaussian distribution}
+\begin{center}
+\includegraphics[width=0.85\textwidth]{traceplot_gauss.pdf}
+\end{center}
+\bi
+\item \textsc{mh} algorithm targeting the stationary density $\text{N}(2,5^2)$ using the proposal distribution $y^* = y + u$, $u \sim \text{Unif}(-\epsilon, \epsilon)$, with $\epsilon = 100, 50, 10, 1$ (\texttt{ep}).
+\ei
+\end{frame}
+
+\begin{frame}{Example: Gaussian distribution}
+\begin{center}
+\includegraphics[width=\textwidth]{auto_gauss.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Example: Gaussian distribution}
+\begin{center}
+\includegraphics[width=0.70\textwidth]{sim_gauss.pdf}
+\end{center}
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+# Simulate the MH chain
+sim <- norm_mcmc(50000, mu = 2, sig = 5, ep = 10, x0 = 50)
+# Identify a burn-in period
+burn_in <- 1:200; sim <- sim[-c(burn_in)]
+# Plot the results
+hist(sim, breaks = 100, freq = FALSE)
+curve(dnorm(x, 2, 5), add = T) # This is usually not known!
+\end{minted}
+\end{frame}
+
+\begin{frame}{Hybrid Metropolis-Hastings}
+\bi
+\item The actual advantage of \textsc{mcmc} over classical sampling methods is actually  evident in \empb{high dimensions}. Recall that $\bm{Y}^{(r)} = (Y_1^{(r)}, \dots, Y_p^{(r)})$. 
+\item As option is to use the ``vanilla'' Metropolis-Hastings algorithm. However the proposal distribution is not easy to choose if $p > 2$. To this issue is devoted Unit B.1.
+\item An alternative is using a ``\empr{hybrid}'' Metropolis-Hastings algorithm. This scheme is also known as \empb{Metropolis-within-Gibbs}.
+
+\item The idea is quite simple: interatively apply a Metropolis-Hastings update to \empb{each coordinate} $Y_j^{(r)}$, according to the proposal distributions $q_j(y_j^* \mid y_j)$. 
+\item Sometimes it is convenient to update block of coordinates rather than univariate components.
+\item This algorithms is \empb{ergodic} and has \empb{stationary} distribution $\pi(\bm{y})$, under mild conditions. This should be taken for granted, see e.g. Chapter 10.3.3 of Robert and Casella (2004). 
+\ei
+\end{frame}
+
+
+\begin{frame}[fragile]{Example: bivariate Gaussian}
+\bi
+\item Suppose we aim at simulating from a bivariate Gaussian distribution, whose density is
+$$
+\pi(y_1,y_2) = \frac{1}{2 \pi \sqrt{(1 - \rho^2)}}\exp\left\{ -\frac{1}{2 (1 - \rho^2)}(y_1^2 - 2 \rho y_1 y_2 + y_2^2)\right\}.
+$$
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+# Density of a bivariate Gaussian (up to a proportionality constant)
+dbvnorm <- function(x, rho) {
+    exp(-(x[1]^2 - 2 * rho * x[1] * x[2] + x[2]^2) / (2 * (1 - rho^2)))
+}
+\end{minted}
+\item For the proposal distributions $q_j(y^*_j \mid y_j)$, we can again use a \empb{uniform random walk}, namely
+$$
+y^*_j = y_j + u_j, \qquad u \sim \text{Unif}(-\epsilon_j, \epsilon_j), \qquad j=1,2.
+$$
+\item As before, the choice of $\epsilon_j$ affects the performance of the \textsc{mh}. 
+\ei
+\end{frame}
+
+\begin{frame}[fragile]{Example: bivariate Gaussian}
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+# Hybrid Metropolis (Metropolis-within-Gibbs)
+bvnorm_mcmc <- function(R, rho, ep, x0) {
+    out <- matrix(0, R + 1, 2)
+    out[1, ] <- x0
+    x <- x0
+    for(r in 1:R){
+        for(j in 1:2){
+            xs <- x
+            xs[j] <- x[j] + runif(1, -ep[j], ep[j])
+            alpha <- min(dbvnorm(xs, rho) / dbvnorm(x, rho), 1) # Acceptance probability
+            accept <- rbinom(1, size = 1, prob = alpha) # Acceptance / rejection step
+            if(accept == 1) {
+                x[j] <- xs[j]
+            }
+        }
+        out[r + 1, ] <- x
+    }
+    out 
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}{Example: bivariate Gaussian}
+\begin{center}
+\includegraphics[width=0.85\textwidth]{biv_gauss.pdf}
+\end{center}
+\bi
+\item Hybrid \textsc{mh} algorithm targeting the stationary density  of a bivariate normal with correlation $\rho = 0.8$, with starting point $(10, 10)$. 
+\ei
+\end{frame}
+
+
+\begin{frame}{Metropolis-Hastings algorithm in Bayesian statistics}
+    \bi
+    \item The \empb{Metropolis-Hastings} (\textsc{mh}) algorithm is especially useful for Bayesian inference. In the following, we just rephrase the \textsc{mh} using the Bayesian notation. 
+    \item Set the first value of the chain $\bm{\theta}^{(0)}$ to some (reasonable) value.
+    \ei
+    \bb{At the $r$th value of the chain}
+    
+    \bi
+    \item Let $\bm{\theta} = \bm{\theta}^{(r)}$ be the current status of the chain.
+    \item Sample $\bm{\theta}^*$ from a \empr{proposal distribution} $q(\bm{\theta}^* \mid \bm{\theta})$.
+    \item Compute the \empr{acceptance probability}, defined as
+    $$
+    \alpha = \min\left\{1, \frac{\pi(\bm{\theta}^* \mid \bm{X})} {\pi(\bm{\theta} \mid \bm{X})}
+    \frac{q(\bm{\theta} \mid \bm{\theta}^*)} {q(\bm{\theta}^* \mid \bm{\theta})}\right\} = \min\left\{1, \frac{\pi(\bm{\theta}^*) \pi(\bm{X} \mid \bm{\theta}^*)} {\pi(\bm{\theta}) \pi(\bm{X} \mid \bm{\theta})}
+    \frac{q(\bm{\theta} \mid \bm{\theta}^*)} {q(\bm{\theta}^* \mid \bm{\theta})}\right\}.
+    $$
+    
+    \item With probability $\alpha$, \empr{update the status} of the chain and set  $\bm{\theta} \leftarrow \bm{\theta}^*$.
+    \ei
+    \eb
+\end{frame}
+
+\begin{frame}\frametitle{Implementation of \textsc{mcmc}}
+\bi
+% \item The \textsc{mh} is perhaps the simplest \textsc{mcmc} algorithm and it has several limitations. We will discuss modifications / extensions of the \textsc{mh} in the next units.
+\item Here we focus on \empr{practical considerations} concerning the implementation with \textbf{R}. Higher performance can be achieved using C++ and the \textbf{Rcpp} package (i.e. unit A.2).
+\item This is far from a comprehensive guide about \textbf{R} programming. We will consider a specific model and we will implement the relevant code in \textbf{R}.
+\ei
+\bb{What about BUGS / JAGS / Stan?}
+\bi
+\item If the performance is not a concern, Stan-like software is an extremely useful tool for \empb{practitioners} who wish to implement standard Bayesian models. 
+\item Conversely, any non-standard or novel model, i.e. those usually developed by researchers in statistics, may be difficult or even impossible to implement.
+\item Besides, the ``manual" implementation is very useful to \empb{gain insights} about the model itself and it facilitates a lot the \empr{debugging} process.
+\ei
+\eb
+\end{frame}
+
+
+\begin{frame}\frametitle{Example II: Weibull model for censored data}
+    \bi
+    \item We consider an example from survival analysis, i.e. the data are \empb{survival times} which may be \empr{censored}.
+    \item In this example, we assume that the survival times are iid random variable following a Weibull distribution $\text{Weib}(\gamma, \beta)$.
+    \item The observed survival time $t_i$ is either \empb{complete} ($d_i = 1$) or \empr{right censored} ($d_i = 0)$, meaning that the survival time is higher than the observed $t_i$. 
+    \item The \empb{hazard} and \empb{survival} functions of a Weibull distribution are
+    $$h(t \mid \gamma, \beta) = \frac{\gamma}{\beta}\left(\frac{t}{\beta}\right)^{\gamma - 1},
+\quad S(t \mid \gamma, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\gamma}\right\}. 
+$$
+\item Recall that the \empb{density} function is obtained as $f(t \mid \gamma, \beta) = h(t \mid \gamma, \beta)S(t \mid \gamma, \beta)$.
+    \ei
+\end{frame}
+
+\begin{frame}\frametitle{Likelihood function}
+\bi
+\item The \empb{likelihood} for this parametric model, under suitable censorship assumptions, is \empr{proportional} to the following quantity
+$$
+\pi(\textbf{t},\textbf{d} \mid \bm{\theta}) \propto \prod_{i=1}^n h(t_i \mid \gamma, \beta)^{d_i} S(t_i \mid \gamma, \beta) = \prod_{i : d_i=1}f(t_i \mid \gamma, \beta) \prod_{i: d_i = 0}S(t_i \mid \gamma,\beta),
+$$
+with $(\gamma, \beta)$ being the parameter vector.
+\item \empr{\underline{Remark}} When performing (Bayesian) inference, note that the likelihood is always defined up to an \empb{irrelevant normalizing constant} not depending on the parameters $\bm{\theta}.$
+\item These irrelevant constants \empr{can and should be omitted} when performing computations, especially if they are expensive to evaluate. 
+\ei
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Bad implementation I (use the log-scale)}
+\bi
+\item In our experiments, we make use the \texttt{stanford2} dataset of the \texttt{survival} package.
+\item In first place, we need to implement the log-likelihood function, say \texttt{loglik}.
+\item The following implementation of the log-likelihood is correct but \empr{numerically unstable}.
+\ei
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+loglik_inaccurate <- function(t, d, gamma, beta) {
+  hazard <- prod((gamma / beta * (t / beta)^(gamma - 1))^d)
+  survival <- prod(exp(-(t / beta)^gamma))
+  log(hazard * survival)
+}
+
+# Evaluate the log-likelihood at the point (0.5, 1000)
+loglik_inaccurate(t, d, gamma = 0.5, beta = 1000) 
+# [1] -Inf
+\end{minted}
+\bi
+\item The product of several terms close to $0$ leads to numerical inaccuracies $\implies$ \empb{use the log-scale} instead.
+\ei
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Bad implementation II (initialize the output)}
+\bi
+\item This second coding attempt relies on the log-scale and is indeed numerically much more stable than the previous version.
+\item However, this implementation is inefficient $\implies$ \empb{do not increase objects' dimension}.
+\ei
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+loglik_inefficient2 <- function(t, d, gamma, beta) {
+  n <- length(t) # Sample size
+  log_hazards <- NULL
+  log_survivals <- NULL
+  
+  for (i in 1:n) {
+    log_hazards <- c(log_hazards, d[i] * ((gamma - 1) * log(t[i] / beta) + log(gamma / beta)))
+    log_survivals <- c(log_survivals, -(t[i] / beta)^gamma)
+  }
+  sum(log_hazards) + sum(log_survivals)
+}
+
+# Evaluate the log-likelihood at the point (0.5, 1000)
+loglik_inefficient2(t, d, gamma = 0.5, beta = 1000)
+# [1] -873.3299
+\end{minted}
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Bad implementation III (avoid \texttt{for} loops)}
+\bi
+\item This third attempt avoids the previous pitfalls but it is still quite inefficient $\implies$ \empb{use vectorized code} whenever possible.
+\ei
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+loglik_inefficient1 <- function(t, d, gamma, beta) {
+  n <- length(t) # Sample size
+  log_hazards <- numeric(n)
+  log_survivals <- numeric(n)
+
+  for (i in 1:n) {
+    log_hazards[i] <- d[i] * ((gamma - 1) * log(t[i] / beta) + log(gamma / beta))
+    log_survivals[i] <- -(t[i] / beta)^gamma
+  }
+  sum(log_hazards) + sum(log_survivals)
+}
+
+# Evaluate the log-likelihood at the point (0.5, 1000)
+loglik_inefficient1(t, d, gamma = 0.5, beta = 1000)
+# [1] -873.3299
+\end{minted}
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Good implementation}
+\bi
+\item The following version is both \empb{numerically stable} and \empr{efficient}. 
+
+\ei
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+loglik <- function(t, d, gamma, beta) {
+  log_hazard <- sum(d * ((gamma - 1) * log(t / beta) + log(gamma / beta)))
+  log_survival <- sum(-(t / beta)^gamma)
+  log_hazard + log_survival
+}
+
+# Evaluate the log-likelihood at the point (0.5, 1000)
+loglik(t, d, gamma = 0.5, beta = 1000)
+# [1] -873.3299
+\end{minted}
+\bi
+\item All these versions of \texttt{loglik} run in fractions of seconds. However, the \texttt{loglik} function must be executed i.e. $\sim 10^5$ times within a \textsc{mh} algorithm. 
+\item Moreover, in more complex models several instances of these inefficiencies add up.
+\ei
+\end{frame}
+
+\begin{frame}[fragile]{Benchmarking the code}
+\bi
+\item To understand which function works better, you need to \empb{test its performance}.
+\item There exist specialized packages to do so, i.e. \textbf{R} \texttt{rbenchmark} or \texttt{microbenchmark}.
+\item These packages execute the code several times and report the \empr{average execution time}.
+\item The column ``\texttt{elapsed}" refer to the overall time (in seconds) over $1000$ replications. 
+\ei
+
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+library(rbenchmark) # Library for performing benchmarking
+
+benchmark(
+  loglik1 = loglik(t, d, gamma = 0.5, beta = 1000),
+  loglik2 = loglik_inefficient1(t, d, gamma = 0.5, beta = 1000),
+  loglik3 = loglik_inefficient2(t, d, gamma = 0.5, beta = 1000),
+  columns = c("test", "replications", "elapsed", "relative"),
+  replications = 1000
+)
+
+#     test replications elapsed relative
+#1 loglik1         1000   0.014    1.000
+#2 loglik2         1000   0.079    5.643
+#3 loglik3         1000   0.412   29.429
+\end{minted}
+
+
+\end{frame}
+
+\begin{frame}[fragile]{A matter of style}
+\bi
+\item \empr{Formatting your code} properly is a healthy programming practice.
+\item You can refer to \url{https://style.tidyverse.org} for a comprehensive overview of good practices in \textbf{R}.
+\item Quoting the \empb{tidyverse style guide}: ``\textit{Good coding style is like correct punctuation: you can manage without it, butitsuremakesthingseasiertoread}".
+\item The \texttt{styler} \textbf{R} package automatically restyles your code for you and it is integrated within \textbf{RStudio} as an add-in.
+\ei
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+# Good
+x <- 5
+
+# Bad
+x = 5
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Reparametrizations I}
+\bi
+\item When performing (Bayesian) inference, the choice of the \empb{parametrization} has strong impacts on computations. 
+\item \empb{General advice}: perform computations on the most convenient parametrization and then transform back the obtained samples.
+\item As a rule of thumb, you should use parametrizations with \empr{\underline{unbounded domains}}. This facilitates the choice of proposal distributions and could also \empb{improve the mixing}.
+\item In our model, the two parameters $\gamma, \beta$ are strictly positive. Hence, a common strategy is to consider their logarithm, i.e. $\bm{\theta} = (\theta_1,\theta_2) =  (\log{\gamma}, \log{\beta})$.
+\ei
+\bb{To log or not to log?}
+Roberts, G. O. and Rosenthal, J. S. (2009). \emph{Examples of adaptive MCMC}. Journal of Computational and Graphical Statistics, \textbf{18}(2), 349–367.
+\eb
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Reparametrizations \& priors}
+\bi
+\item When reparametrizations are involved, there two possible modeling strategies.
+\item Choose the prior \empr{\underline{before}} the reparametrization. In our setting, we could let for example
+$$
+\gamma \sim \text{Ga}(0.1, 0.1), \qquad \beta \sim \text{Ga}(0.1, 0.1).
+$$
+If you do so, remember to include the \empr{\underline{jacobian}} of the transformation when considering the transformed posterior!
+\item Choose the prior \empr{\underline{after}} the reparametrization. In our setting, we could let for example
+$$
+\theta_1 = \log(\gamma) \sim \text{N}(0, 100), \qquad \theta_2 = \log(\beta) \sim \text{N}(0, 100).
+$$
+This strategy is simpler as it avoids the extra step of computing the jacobian. 
+\ei
+    
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+logprior <- function(theta) {
+  sum(dnorm(theta, 0, sqrt(100), log = TRUE))
+}
+
+logpost <- function(t, d, theta) {
+  loglik(t, d, exp(theta[1]), exp(theta[2])) + logprior(theta)
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}{The \textsc{mh} implementation}
+    \bi
+    \item Since the space of $\bm{\theta}$ is unbounded, it is reasonable to select a \empb{Gaussian random walk} as proposal distribution, namely
+    $$
+    (\bm{\theta}^* \mid \bm{\theta}) \sim \text{N}_2(\bm{\theta}, 0.25^2 I_2).
+    $$
+    The choice of the variance will be discussed in unit B.1.
+    \item Gaussian random walks are \empr{symmetric} proposals distributions, implying that 
+    $$
+    q(\bm{\theta} \mid \bm{\theta}^*) = q(\bm{\theta}^* \mid \bm{\theta}),
+    $$
+    which means that their ratio can be simplified ($=1$) when computing the acceptance probability $\alpha$. 
+    \item As before, make sure you compute $\alpha$ using the log-scale to avoid numerical instabilities. 
+    \item \empr{\underline{Remark}}. Unfortunately, there is no way to avoid \texttt{for} loops, which are highly inefficient $\implies$ this justifies the usage of \textbf{Rcpp} and \textbf{RcppArmadillo}.
+    \ei
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Metropolis-Hastings code}
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+RMH <- function(R, burn_in, t, d) {
+  out <- matrix(0, R, 2) # Initialize an empty matrix to store the values
+  theta <- c(0, 0) # Initial values
+  logp <- logpost(t, d, theta) # Log-posterior
+  for (r in 1:(burn_in + R)) {
+    theta_new <- rnorm(2, mean = theta, sd = 0.25) # Propose a new value
+    logp_new <- logpost(t, d, theta_new)
+    alpha <- min(1, exp(logp_new - logp))
+    if (runif(1) < alpha) {
+      theta <- theta_new; logp <- logp_new # Accept the value
+    }
+    if (r > burn_in) {
+      out[r - burn_in, ] <- theta     # Store the values after the burn-in period
+    }
+  }
+  out
+}
+\end{minted}
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+# Executing the code
+library(tictoc) # Library for "timing" the functions
+tic()
+fit_MCMC <- RMH(R = 50000, burn_in = 5000, t, d)
+toc()
+# 0.92 sec elapsed
+\end{minted}
+\end{frame}
+
+\begin{frame}{Estimated survival function}
+\bi
+\item Posterior mean of the survival function with pointwise $95\%$ credible intervals.
+\ei
+\vspace{5pt}
+    \includegraphics[width=\textwidth]{Sfit}
+\end{frame}
+
+
+
+\begin{frame}\frametitle{Gibbs sampling }
+\bi
+\item We now introduce another Markov Chain Monte Carlo method: the \empb{Gibbs Sampling}. 
+\item Recall that $\pi(\bm{\theta} \mid \bm{X})$ denotes the posterior distribution of $\bm{\theta} \in \Theta \subseteq \mathbb{R}^p$ given the data. 
+\item Let us partition the parameter vector $\bm{\theta} = (\bm{\theta}_1,\dots,\bm{\theta}_{L})$ into ${L}$ blocks of parameters. Sometimes we will have as many blocks as parameters, so that $\bm{\theta} = (\theta_1,\dots,\theta_p)$.
+\item Let $\pi(\bm{\theta}_\ell \mid -)$ be the so-called \empb{full-conditional} of $\bm{\theta}_\ell$, that is
+$$
+\pi(\bm{\theta}_\ell \mid -) = \pi(\bm{\theta}_\ell \mid \bm{X}, \bm{\theta}_1,\dots,\bm{\theta}_{\ell-1},\bm{\theta}_{\ell+1},\dots,\bm{\theta}_{L}), \quad \ell=1,\dots,{L},
+$$
+namely the conditional distribution of $\bm{\theta}_\ell$ given the \empb{data} and the \empr{other parameters}. 
+\item Repeatedly sampling $\bm{\theta}_\ell$, for $\ell=1,\dots,{L}$, from the corresponding full conditionals leads to a \textsc{mcmc} algorithm targeting the posterior distribution $\pi(\bm{\theta} \mid \bm{X})$.
+\ei
+\end{frame}
+
+\begin{frame}{Connection with the hybrid Metropolis-Hastings}
+\bi
+\item The Gibbs sampler is a \empr{special case} of the hybrid Metropolis-Hastings, in which the \empb{full conditionals} are used as \empb{proposal distribution}. 
+
+\item The general hybrid \textsc{mh} is indeed often called \empb{Metropolis-within-Gibbs}. 
+
+\item Suppose that $\bm{\theta} = (\theta_1,\dots,\theta_p)$. Then 
+it can be shown that
+$$
+\frac{\pi(\bm{\theta}^* \mid \bm{X})} {\pi(\bm{\theta} \mid \bm{X})} = \frac{\pi(\theta_j^* \mid \bm{X}, \bm{\theta}_{-j})} {\pi(\theta_j \mid \bm{X}, \bm{\theta}_{-j})}.
+$$
+
+\item In addition, note that the \empr{acceptance probabilities} of the hybrid \textsc{mh} algorithm are
+\begin{equation*}
+    \begin{aligned}
+    \alpha_j &= \min\left\{1, \frac{\pi(\bm{\theta}^* \mid \bm{X})} {\pi(\bm{\theta} \mid \bm{X})} \frac{q_j(\theta_j \mid \bm{\theta}^*)} {q_j(\theta_j^* \mid \bm{\theta})}\right\} = \min\left\{1, \frac{\pi(\bm{\theta}^* \mid \bm{X})} {\pi(\bm{\theta} \mid \bm{X})}
+    \frac{\pi(\theta_j \mid \bm{X}, \bm{\theta}_{-j})} {\pi(\theta_j^* \mid \bm{X}, \bm{\theta}_{-j})}\right\} = 1.
+    \end{aligned}
+\end{equation*}
+\ei
+\end{frame}
+
+
+
+\begin{frame}{General considerations}
+\bi
+\item The \empr{acceptance rate} of the Gibbs sampler is uniformly equal to $1$.
+\item The use of Gibbs-sampler requires the knowledge of the full-conditional distributions, from which we should be able to sample. 
+\item The Gibbs sampling is ``automatic'', in the sense that there are no tuning parameters that we need to choose, which is both good and bad news. 
+\item Ergodicity and convergence to the posterior stationary distribution are ensured under very mild condition, i.e. requiring the connectedness of the support. 
+\item The \empb{Hammersley-Clifford} theorem implies that a sufficiently regular joint density can be expressed as a function of the full-conditionals.
+\ei
+\end{frame}
+
+\begin{frame}{Example: non-connected support}
+\begin{center}
+\includegraphics[width=\textwidth]{unconnected.png} \\
+\small{Example of non-connected support: gray areas have positive probability. Picture taken from Robert and Casella (2004).}
+\end{center}
+\end{frame}
+
+
+\begin{frame}\frametitle{Example: conditionally-conjugate Gaussian model}
+\bi
+\item Let us assume the observations $(x_1,\dots, x_n)$ are draws from
+$$
+(x_i \mid \mu, \sigma^2) \overset{\text{iid}}{\sim} \text{N}(\mu, \sigma^2), \qquad i=1,\dots,n.
+$$
+with independent priors $\mu \sim \text{N}(\mu_\mu, \sigma^2_\mu)$ and $\sigma^{-2} \sim \text{Ga}(a_\sigma, b_\sigma)$. 
+
+\item The full conditional distribution for the \empb{mean} $\mu$ is:
+
+$$
+(\mu \mid -) \sim \text{N}\left(\mu_n, \sigma^2_n\right), \qquad \mu_n = \sigma^2_n\left(\frac{\mu_\mu}{\sigma^2_\mu} + \frac{1}{\sigma^2}\sum_{i=1}^nx_i\right), \quad \sigma^2_n = \left(\frac{n}{\sigma^2} + \frac{1}{\sigma^2_\mu}\right)^{-1}.
+$$
+
+\item The full conditional distribution for the \empr{precision} $\sigma^{-2}$ is:
+$$
+(\sigma^{-2} \mid -) \sim \text{Ga}\left(a_n, b_n\right), \qquad a_n = a_\sigma + n/2, \quad b_n = b_\sigma + \frac{1}{2}\sum_{i=1}^n(x_i - \mu)^2.
+$$
+\ei
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Example: conditionally-conjugate Gaussian model}
+\begin{minted}[frame=lines,baselinestretch=1.1,fontsize=\footnotesize]{R}
+gibbs_R <- function(x, mu_mu, sigma2_mu, a_sigma, b_sigma, R, burn_in) {
+  # Initialization
+  n <- length(x); xbar <- mean(x)
+  out <- matrix(0, R, 2)
+  # Initial values for mu and sigma
+  sigma2 <- var(x); mu <- xbar
+  for (r in 1:(burn_in + R)) {
+    # Sample mu
+    sigma2_n <- 1 / (1 / sigma2_mu + n / sigma2)
+    mu_n <- sigma2_n * (mu_mu / sigma2_mu + n / sigma2 * xbar)
+    mu <- rnorm(1, mu_n, sqrt(sigma2_n))
+    # Sample sigma2
+    a_n <- a_sigma + 0.5 * n
+    b_n <- b_sigma + 0.5 * sum((x - mu)^2)
+    sigma2 <- 1 / rgamma(1, a_n, b_n)
+    # Store the values after the burn-in period
+    if (r > burn_in) {
+      out[r - burn_in, ] <- c(mu, sigma2)
+    }
+  }
+  out
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}\frametitle{Example: conditionally-conjugate Gaussian model}
+\includegraphics[width=\textwidth]{gibbs2_gauss.pdf}
+\end{frame}
