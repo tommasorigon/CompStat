@@ -1,0 +1,423 @@
+---
+title: "Computational Statistics II"
+subtitle: "Unit A.2: Rcpp & RcppArmadillo"
+author:
+  name: Tommaso Rigon
+  affiliation: DEMS
+output: 
+  html_document: 
+    theme: cosmo
+    df_print: kable
+    highlight: kate
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r startup, include = FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = T, eval = T, message = F, warning = F, error = F, comment = NA, cache = F, include = T, R.options = list(width = 100), collapse = T, dpi = 200, fig.align = "center", fig.height = 5, fig.width = 8)
+```
+
+## Documentation
+
+### Rcpp
+
+The `Rcpp` **R** package simplifies the interface between **R** and C++. The main advantage is that C++ code is usually faster than **R**, especially in non-vectorized settings. 
+
+The official website of `Rcpp` is [http://www.rcpp.org](http://www.rcpp.org), but you can find a large amount of tutorials and examples online. An important and useful read is
+
+- Eddelbuettel, D. and Balamuta, J. J. (2018).Extending R with C++: A Brief Introduction to Rcpp. *The American Statistician*, **72**(1), 28--36.
+
+This paper is highly recommended as it provides further documentation, examples and discusses the "philosophy" behind `Rcpp`.
+
+### RcppArmadillo
+
+The package `RcppArmadillo` is an extension of `Rcpp` designed for highly efficient **linear algebra**. 
+
+As described in the official documentation (http://arma.sourceforge.net), Armadillo is a "high quality linear algebra library (matrix maths) for the C++ language, aiming towards a good balance between speed and ease of use".
+
+The syntax is deliberately similar to that of Matlab and **R**.
+
+## Installation
+
+In first place, you **need a C++ compiler**. For `RcppArmadillo` you will also need a **Fortran compiler**.
+
+If you are a **Windows user**, you just need to install [Rtools](https://cran.r-project.org/bin/windows/Rtools/), as described here:
+
+- https://thecoatlessprofessor.com/programming/cpp/installing-rtools-for-compiled-code-via-rcpp/
+
+If you are a **Mac Os user**, unfortunately the procedure is slightly more complicate. You can refer to:
+
+- https://thecoatlessprofessor.com/programming/cpp/r-compiler-tools-for-rcpp-on-macos/
+
+If you are a **Linux user**, you probably already know what to do. In any event, this is the easieast case as you just need to run the following commands
+
+```{bash, eval=F}
+# RHEL/CentOS
+sudo yum update
+sudo yum install R
+
+# Ubuntu
+sudo apt-get update
+sudo apt-get install r-base r-base-dev
+```
+
+Finally, the **R** packages `Rcpp` and `RcppArmadillo` can be installed in the usual manner, i.e. using `install.packages("Rcpp")` and `install.packages("RcppArmadillo")`. 
+
+## Basic examples
+
+### Verifying the installation and basic usage
+
+In first place, let us load the **R** packages into memory.
+
+```{r}
+library(Rcpp)
+library(RcppArmadillo)
+```
+
+In order to write a C++ function, we need to perform the following step
+
+1. Create an empty file, say `file.cpp`, which will contain the C++ code. If you are using **Rstudio**, you can create it from File --> New file. 
+
+2. Save the C++ file and **compile it** using the `sourceCpp` function of the `Rcpp` package. 
+
+3. Use the functions contained in the C++ file within **R**, as usual.
+
+We create a `sum.cpp` file including the function `arma_sum`, which computes the sum of the elements of a vector. You can include multiple functions into a single file, but only those preceeded by `// [[Rcpp::export]]` will be available within **R**. 
+
+The C++ code of the `sum.cpp` file is given in the following. Note that we need to **import the Rcpp and RcppArmadillo libraries**.
+
+```{Rcpp}
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+using namespace Rcpp;
+using namespace arma;
+
+// [[Rcpp::export]] 
+double arma_sum(vec x){
+  double sum = 0;
+  int n = x.n_elem; // Length of the vector x
+  for(int i=0; i < n; i++){
+    sum += x[i]; // Shorthand for: sum = sum + x[i];
+  }
+  return(sum);
+}
+```
+
+Then, we can **compile** the `sum.cpp` file with the following command. If you are using **RStudio**, you can also click on the **source button**.
+
+```{r}
+# In this case the file is saved in a different folder.
+# Obviously, you need to change the PATH as needed
+sourceCpp("../cpp/sum.cpp")
+```
+
+
+
+We can finally test the `arma_sum` function and compare it with the **R** implementation.
+
+```{r}
+x <- c(10, 20, 5, 30, 21, 78, pi, exp(7))
+arma_sum(x) # sum of the vector x
+sum(x) # sum of the vector x - usual command
+```
+
+
+### Example 1: `rnorm` and `arma_rnorm`
+
+In `Rcpp` is possible to generate random variables. There are some mild differences from the usual **R** implementation, most notably the fact that C++ is usually not vectorized. 
+
+Let us create and compile the `arma_rnorm.cpp` file, whose content is the following.
+
+```{Rcpp}
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+using namespace Rcpp;
+using namespace arma;
+
+// [[Rcpp::export]]
+vec arma_rnorm(int n, double mean, double sd) {
+  vec out(n); // Allocate a vector of dimension n
+  for (int i = 0; i < n; i++) {
+    out[i] = R::rnorm(mean, sd); // Sample from a Gaussian distribution
+  }
+    return out; 
+}
+```
+
+Note that the seed and the results are identical to the usual `rnorm` function in **R**. The execution time is slightly lower in Rcpp, but the difference is negligible. 
+
+```{r}
+set.seed(123)
+c(arma_rnorm(5, 0, 1)) # Rcpp implementation
+
+set.seed(123)
+rnorm(5, 0, 1) # Usual R command
+```
+
+In terms of computing times, we get the following results
+
+```{r}
+library(rbenchmark)
+benchmark(
+  Rcpp = arma_rnorm(10^4, 3, 5),
+  R = rnorm(10^4, 3, 5),
+  columns = c("test", "replications", "elapsed", "relative"),
+  replications = 1000
+)
+```
+
+### Example 2: euclidean distance
+
+Suppose we are given a matrix ${\bf X}$ of dimension $n \times p$, whose rows are ${\bf x}_i = (x_{i1},\dots,x_{ip})^\intercal$. We are interested in computing the matrix of euclidean distances ${\bf D}$ of dimension $n \times n$, whose entries are equal to
+
+$$
+d_{ii'} = \sqrt{\sum_{j=1}^p (x_{ij} - x_{i'j})^2}, \qquad i,i' \in \{1,...,n\}.
+$$
+Let us create a naive implementation of such a function in **R**. We have that
+
+```{r}
+R_dist <- function(X) {
+  n <- nrow(X)
+  D <- matrix(0, n, n) # Define the output
+  for (i in 1:n) {
+    for (k in 1:i) {
+      D[i, k] <- D[k, i] <- sqrt(sum((X[i, ] - X[k, ])^2))
+    }
+  }
+  D
+}
+```
+
+```{Rcpp}
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+using namespace Rcpp;
+using namespace arma;
+
+// [[Rcpp::export]]
+mat arma_dist(const mat& X){
+  int n = X.n_rows;
+  mat D(n, n, fill::zeros); // Allocate a matrix of dimension n x n
+  for (int i = 0; i < n; i++) {
+    for(int k = 0; k < i; k++){
+      D(i, k) = sqrt(sum(pow(X.row(i) - X.row(k), 2)));
+      D(k, i) = D(i, k);
+    }
+  }
+  return D; 
+}
+```
+
+These two implementations produce the same result. Note that in **R** you could also use the `dist` function. 
+
+```{r}
+X <- cbind(1:3, c(20, 10, 2))
+
+as.matrix(dist(X)) # R built-in function
+R_dist(X) # R implementation
+arma_dist(X) # Armadillo implementation
+```
+
+```{r}
+X <- as.matrix(USArrests) # Example dataset
+benchmark(
+  arma_dist = arma_dist(X),
+  R_dist = R_dist(X),
+  dist = as.matrix(dist(X)),
+  columns = c("test", "replications", "elapsed", "relative"),
+  replications = 1000
+)
+```
+
+
+
+### Example 3: OLS
+
+In this third example, we illustrate the performance of `RcppArmadillo` for fitting linear models. In first place, we implement two functions in **R** that obtain the OLS estimate $\hat{\beta}$ from the design matrix ${\bf X}$ and the response ${ \bf y}$.
+
+```{r}
+# Using matrix multiplication commands
+lm_coef1 <- function(X, y) {
+  solve(t(X) %*% X) %*% t(X) %*% y
+}
+
+# Smarter (no matrix inversion!) and faster implementation
+lm_coef2 <- function(X, y) {
+  solve(crossprod(X), crossprod(X, y))
+}
+```
+
+In the following, it is described the corresponding `RcppArmadillo` implementation. The linear system is then solved through the `solve` command directly applied on ${\bf X}$ and ${ \bf y}$.
+
+```{Rcpp}
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+using namespace Rcpp;
+using namespace arma;
+
+// [[Rcpp::export]]
+vec lm_coef3(const mat& X, const vec& y) {
+  vec coef = solve(X, y);
+  return(coef);
+}
+```
+
+The next simulation seems to confirm that the `RcppArmadillo` is faster than naive R implementations, but actually slower than `lm_coef2`. This is expected, as the function `solve` of **R** is itself written in C++. The `lm` **R** command is very slow, but it is actually computing many more quantities than just the OLS estimate. 
+
+```{r}
+set.seed(123)
+X <- cbind(1, rnorm(10^4))
+y <- rowSums(X) + rnorm(10^4)
+
+cbind(lm_coef1(X, y), lm_coef2(X, y), lm_coef3(X, y))
+```
+
+```{r}
+benchmark(R_matrix_inv = lm_coef1(X, y),
+  R_no_matrix_inv  = lm_coef2(X, y),
+  Rcpp = lm_coef3(X, y),
+  lm = coef(lm(y ~ X, data = cars)),
+  columns = c("test", "replications", "elapsed", "relative"),
+  replications = 1000
+)
+```
+
+
+### Gibbs sampling example: Gaussian data
+
+In the next example, we consider a Gibbs sampling implementation for Gaussian data and conditionally conjugate prior. To make things concrete, we consider the `sleep` dataset available in **R**. 
+
+```{r}
+data(sleep)
+x <- sleep$extra[sleep$group == 1] # Extra hours of sleep for the second group
+```
+
+We assume that the observations are such that
+
+$$
+(X_i \mid \mu, \sigma^2) \overset{\text{iid}}{\sim} \text{N}(\mu, \sigma^2), \qquad i=1,\dots,n.
+$$
+with independent priors $\mu \sim \text{N}(\mu_\mu, \sigma^2_\mu)$ and $\sigma^{-2} \sim \text{Ga}(a_\sigma, b_\sigma)$. The full conditional distributions are the following:
+
+$$
+(\mu \mid -) \sim \text{N}\left(\mu_n, \sigma^2_n\right), \qquad \mu_n = \sigma^2_n\left(\frac{\mu_\mu}{\sigma^2_\mu} + \frac{1}{\sigma^2}\sum_{i=1}^nx_i\right), \quad \sigma^2_n = \left(\frac{n}{\sigma^2} + \frac{1}{\sigma^2_\mu}\right)^{-1}
+$$
+and
+
+$$
+(\sigma^{-2} \mid -) \sim \text{Ga}\left(a_n, b_n\right), \qquad a_n = a_\sigma + n/2, \quad b_n = b_\sigma + \frac{1}{2}\sum_{i=1}^n(x_i - \mu)^2.
+$$
+We compare a Gibbs sampling implementation (`gibbs_R` function) with the corresponding `Rcpp` implementation (`gibbs_arma` function). Let us start with the **R** implementation. 
+
+```{r}
+gibbs_R <- function(x, mu_mu, sigma2_mu, a_sigma, b_sigma, R, burn_in) {
+
+  # Initialization
+  n <- length(x)
+  xbar <- mean(x)
+  out <- matrix(0, R, 2)
+
+  # Initial values for mu and sigma
+  sigma2 <- var(x)
+  mu <- xbar
+
+  for (r in 1:(burn_in + R)) {
+
+    # Sample mu
+    sigma2_n <- 1 / (1 / sigma2_mu + n / sigma2)
+    mu_n <- sigma2_n * (mu_mu / sigma2_mu + n / sigma2 * xbar)
+    mu <- rnorm(1, mu_n, sqrt(sigma2_n))
+
+    # Sample sigma2
+    a_n <- a_sigma + 0.5 * n
+    b_n <- b_sigma + 0.5 * sum((x - mu)^2)
+    sigma2 <- 1 / rgamma(1, a_n, b_n)
+
+    # Store the values after the burn-in period
+    if (r > burn_in) {
+      out[r - burn_in, ] <- c(mu, sigma2)
+    }
+  }
+  out
+}
+```
+
+We now "translate" the `gibbs_R` function into `Rcpp`. 
+
+```{Rcpp}
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+using namespace Rcpp;
+using namespace arma;
+
+// [[Rcpp::export]] 
+mat gibbs_arma(vec x, double mu_mu, double sigma2_mu, double a_sigma, double b_sigma, int R, int burn_in){
+  
+  // Initialization
+  double n = x.n_elem;
+  double xbar = mean(x);
+  mat out(R,2);
+
+  // Initial values for mu and sigma
+  double sigma2 = var(x);
+  double mu = mean(x);
+  
+  for (int r = 0; r < R + burn_in; r++) {
+    // Sample mu
+    double sigma2_n = 1.0 / (1.0 / sigma2_mu + n / sigma2);
+    double mu_n = sigma2_n * (mu_mu / sigma2_mu + n / sigma2 * xbar);
+    mu = rnorm(1, mu_n, sqrt(sigma2_n))[0];
+      
+   // Sample sigma2
+    double a_n = a_sigma + 0.5*n;
+    double b_n = b_sigma + 0.5 * sum(pow(x - mu,2));
+    // NOTE: rgamma in Rcpp use scale, not rate, as default
+    sigma2 = 1.0 / rgamma(1, a_n, 1.0 / b_n)[0];
+  
+    if (r > burn_in) {
+      out(r - burn_in, 0) = mu;
+      out(r - burn_in, 1) = sigma2;
+    }
+  }
+  return out;
+}
+```
+
+We can now run the algorithm. We choose `R = 50000` and `burn_in = 5000`. The timing differences between the two implementations are substantial. 
+
+```{r}
+R <- 50000
+burn_in <- 5000
+```
+
+```{r}
+library(tictoc) # Library for "timing" the functions
+set.seed(123)
+
+# Hyperparameter settings
+mu_mu <- 0
+sigma2_mu <- 50
+a_sigma <- b_sigma <- 2
+
+tic()
+fitR <- gibbs_R(x, mu_mu, sigma2_mu, a_sigma, b_sigma, R, burn_in)
+toc()
+
+tic()
+fitRcpp <- gibbs_arma(x, mu_mu, sigma2_mu, a_sigma, b_sigma, R, burn_in)
+toc()
+```
+
+
+### Checking the convergence
+
+```{r}
+library(coda)
+fitRcpp <- as.mcmc(fitRcpp) # Convert the matrix into a "coda" object
+plot(fitRcpp)
+```
+
+
