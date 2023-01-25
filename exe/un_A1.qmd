@@ -12,13 +12,14 @@ format:
     embed-resources: true
     code-line-numbers: true
     smooth-scroll: true
+    execute:
+      echo: true
+      collapse: true
 editor_options: 
   chunk_output_type: console
 ---
 
-```{r startup, include = FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = T, eval = T, message = F, warning = F, error = F, comment = NA, cache = F, include = T, R.options = list(width = 100), collapse = T, dpi = 200, fig.align = "center", fig.height = 5, fig.width = 8)
-```
+
 
 In this markdown file it is described an implementation of a **random walk Metropolis-Hastings** algorithm for a Weibull survival model. Please refer to the [**slides of the unit A.1**](../slides/un_A1.pdf) for a more complete description of the algorithm and the model itself.
 
