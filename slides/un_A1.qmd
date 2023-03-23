@@ -4,36 +4,10 @@ subtitle: "Unit A.1: Metropolis-Hastings and Gibbs sampling"
 author: "Tommaso Rigon"
 institute: Unimib
 format:
-  beamer: 
-    pdf-engine: pdflatex
-    fontsize: 9pt
-    include-in-header: 
-      text: |
-        \usepackage{bm}
-        \usepackage{lmodern}
-        \usetheme{Madrid}
-        \usepackage{appendixnumberbeamer}
-        \setbeamertemplate{itemize items}[square]
-        \settowidth{\leftmargini}{\usebeamertemplate{itemize item}}
-        \addtolength{\leftmargini}{\labelsep}
-        \beamertemplatenavigationsymbolsempty % don't show the navigation bar
-        \definecolor{emph2}{RGB}{230,160,25}       % HTF orange for emphasis
-        \definecolor{titles}{RGB}{48,57,172}        % Light blue for the titles
-        \definecolor{structural}{RGB}{6,35, 101}   % Dark blue for the template
-        \setbeamercolor{structure}{fg=structural} % titles, itemize, itemize, etc
-        \setbeamercolor{block title}{bg=white, fg=titles}
-        \setbeamercolor{item}{fg=titles}
-        \setbeamerfont{title}{size=\huge}
-        \setbeamerfont{subtitle}{size=\normalsize}
-        \setbeamerfont{frametitle}{size=\huge}
-        \setbeamerfont{author}{size=\large}
-        \setbeamerfont{institute}{size=\normalsize}
-        \setbeamerfont{date}{size=\small}
-        \setbeamerfont{frame number in foot}{size=\scriptsize}
   revealjs:
     html-math-method: katex
     callout-appearance: minimal
-    theme: serif # alternative themes (subset): default, night
+    theme: default # alternative themes (subset): default, night
     smaller: true
     embed-resources: true
     slide-number: true
