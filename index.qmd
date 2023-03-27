@@ -1,5 +1,5 @@
 ---
-title: "Computational Statistics II"
+title: "Bayesian Computations"
 subtitle: "Ph.D. in Economics, Statistics, and Data Science - University of Milano-Bicocca"
 author:
   name: Tommaso Rigon
@@ -20,7 +20,7 @@ editor_options:
 ---
 
 
-Computational Statistics II is a course on **Bayesian computations**. The course covers both theoretical and programming aspects. 
+**Bayesian computations** is a module of the PhD course [Bayesian statistics](https://tommasorigon.github.io/BayesStat/). The course covers both theoretical and programming aspects. 
 
 ## Prerequisites
 
