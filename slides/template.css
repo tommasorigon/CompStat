@@ -1,0 +1,34 @@
+/*-- scss:defaults --*/
+
+@import url(https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;700&display=swap);
+
+
+// fonts
+$font-family-sans-serif: "Source Sans Pro", sans-serif !default; 
+$presentation-font-size-root: 27px;
+$presentation-font-smaller: 0.8;
+
+// colors
+//$body-bg: #fff !default;
+//$body-color: #fff !default;
+//$link-color: #51483d !default;
+//$selection-bg: #26351c !default;
+
+// headings
+$presentation-heading-line-height: 1;
+//$presentation-heading-color: #000 !default;
+
+/*-- scss:rules --*/
+
+.reveal a {
+  line-height: 1.3em;
+}
+
+.math.inline {
+  font-size: 85%;
+//  color: #22b222;
+}
+.math.display {
+  font-size: 90%;
+//  color: #b22222;
+}

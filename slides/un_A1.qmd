@@ -2,13 +2,13 @@
 title: "Computational Statistics II"
 subtitle: "Unit A.1: Metropolis-Hastings and Gibbs sampling"
 author: "Tommaso Rigon"
-institute: Unimib
+institute: University of Milano-Bicocca
 format:
   revealjs:
+    transition: slide
     html-math-method: katex
     callout-appearance: minimal
-    theme: default # alternative themes (subset): default, night
-    smaller: true
+    theme: [default, template.css] # alternative themes (subset): default, night
     embed-resources: true
     slide-number: true
     echo: true
@@ -26,6 +26,7 @@ format:
 -   Writing clean and efficient **R** code
 
 #### Main references
+
 - Robert, C. P., and Casella, G. (2004). Monte Carlo Statistical Methods. Springer.
 - Roberts, G. O., and Rosenthal, J. S. (2004). General state space Markov chains and MCMC algorithms. Probability Surveys, 1(1), 20–71.
  - Tierney, L. (1994). Markov chains for exploring posterior distributions. Annals of Statistics, 22(4), 1701-176.
@@ -34,7 +35,7 @@ Associated **R** code is available on the website of the course.
 
 ## Bayesian computations
 
-- Over the past 30 years, Markov Chain Monte Carlo methods (MCMC) methods have **revolutionized** Bayesian statistics.
+- Over the past 30 years, Markov Chain Monte Carlo methods (MCMC) methods have [**revolutionized**]{style="color:DarkOrange"} Bayesian statistics.
 
 - Bayesian computational statistics is nowadays a lively and mature research field, compared to the early days. Still, there are several open questions. 
 
@@ -44,47 +45,47 @@ Associated **R** code is available on the website of the course.
 
 ## Bayesian inference (recap)
 
-- Let $\bm{X}$ be the data, following some distribution $\pi(\bm{X} \mid \bm{\theta})$, i.e. the **likelihood**, with $\bm{\theta} \in \Theta \subseteq \mathbb{R}^p$ being an unknown set of parameters. 
+- Let $\bm{X}$ be the data, following some distribution $\pi(\textbf{X} \mid \boldsymbol{\theta})$, i.e. the [**likelihood**]{style="color:DarkBlue"}, with $\boldsymbol{\theta} \in \Theta \subseteq \mathbb{R}^p$ being an unknown set of parameters. 
 
-- Let $\pi(\bm{\theta})$ be the **prior distribution** associated to $\bm{\theta}$.
+- Let $\pi(\boldsymbol{\theta})$ be the [**prior distribution**]{style="color:DarkBlue"} associated to $\boldsymbol{\theta}$.
 
-- In Bayesian analysis, inference is based on the **posterior distribution** for $\bm{\theta}$, defined as
+- In Bayesian analysis, inference is based on the [**posterior distribution**]{style="color:DarkBlue"} for $\boldsymbol{\theta}$, defined as
 $$
-\pi(\bm{\theta} \mid \bm{X}) = \frac{\pi(\bm{\theta}) \pi(\bm{X} \mid \bm{\theta})}{\int_\Theta\pi(\bm{\theta}) \pi(\bm{X} \mid \bm{\theta}) \mathrm{d} \bm{\theta}}.
+\pi(\boldsymbol{\theta} \mid \textbf{X}) = \frac{\pi(\boldsymbol{\theta}) \pi(\textbf{X} \mid \boldsymbol{\theta})}{\int_\Theta\pi(\boldsymbol{\theta}) \pi(\textbf{X} \mid \boldsymbol{\theta}) \mathrm{d} \boldsymbol{\theta}}.
 $$
 
-- The **normalizing constant**, i.e. the above integral, is often **intractable** $\implies$ no analytical solutions, beyond conjugate cases.
+- [[**Key issue**]{.underline}]{style="color:DarkOrange"}. The **normalizing constant**, i.e. the above integral, is often **intractable** $\implies$ no analytical solutions, beyond conjugate cases.
 
-- Numerical approximations of $\int_\Theta\pi(\bm{\theta}) \pi(\bm{X} \mid \bm{\theta}) \mathrm{d} \bm{\theta}$ are highly unstable, especially in high dimensions $\implies$ the `integrate` **R** function will not work in most cases.
+- Numerical approximations of $\int_\Theta\pi(\boldsymbol{\theta}) \pi(\textbf{X} \mid \boldsymbol{\theta}) \mathrm{d} \boldsymbol{\theta}$ are highly unstable, especially in high dimensions $\implies$ the `integrate` **R** function will not work in most cases.
 
 ## Bayesian inference using sampling
 
 - It is sometimes possible to **sample** from the posterior distribution even without knowing the normalizing constant. 
-- If we can get **random samples** $\bm{\theta}^{(1)}, \dots,\bm{\theta}^{(R)}$ from the posterior distribution, then we can approximate any functional of interest, i.e.
+- If we can get **random samples** $\boldsymbol{\theta}^{(1)}, \dots,\boldsymbol{\theta}^{(R)}$ from the posterior distribution, then we can approximate any functional of interest, i.e.
 $$
-\mathbb{E}(g(\bm{\theta}) \mid \bm{X}) \approx \frac{1}{R}\sum_{r=1}^R g(\bm{\theta}^{(r)}).
+\mathbb{E}(g(\boldsymbol{\theta}) \mid \textbf{X}) \approx \frac{1}{R}\sum_{r=1}^R g(\boldsymbol{\theta}^{(r)}).
 $$
 
-- If $\bm{\theta}^{(1)}, \dots,\bm{\theta}^{(R)}$ were **independent** samples from the posterior distribution, this approximation would be called **Monte Carlo integration**. 
+- If $\boldsymbol{\theta}^{(1)}, \dots,\boldsymbol{\theta}^{(R)}$ were **independent** samples from the posterior distribution, this approximation would be called **Monte Carlo integration**. 
 
 - Monte Carlo integration is justified by the **law of large numbers**.
 
-- In this course, we will consider samples $\bm{\theta}^{(1)}, \dots,\bm{\theta}^{(R)}$ that are **dependent** and follow a Markov Chain $\implies$ Markov Chain Monte Carlo (MCMC).
+- In this course, we will consider samples $\boldsymbol{\theta}^{(1)}, \dots,\boldsymbol{\theta}^{(R)}$ that are **dependent** and follow a Markov Chain $\implies$ Markov Chain Monte Carlo (MCMC).
 
 ## Markov chains
 
-- A sequence $\bm{Y}^{(0)}, \bm{Y}^{(1)}, \dots, \bm{Y}^{(R)}$ of random elements is a **Markov chain** if 
+- A sequence $\textbf{Y}^{(0)}, \textbf{Y}^{(1)}, \dots, \textbf{Y}^{(R)}$ of random elements is a **Markov chain** if 
 $$
-\mathbb{P}(\bm{Y}^{(r + 1)} \in A \mid \bm{y}^{(0)}, \dots, \bm{y}^{(r)}) = \mathbb{P}(\bm{Y}^{(r + 1)} \in A \mid\bm{y}^{(r)}). 
+\mathbb{P}(\textbf{Y}^{(r + 1)} \in A \mid \textbf{y}^{(0)}, \dots, \textbf{y}^{(r)}) = \mathbb{P}(\textbf{Y}^{(r + 1)} \in A \mid\textbf{y}^{(r)}). 
 $$
 
-- In other words, the conditional distribution of $\bm{Y}^{(r + 1)}$ given $\bm{y}^{(0)}, \dots, \bm{y}^{(r)}$ is the same as the conditional distribution of $\bm{Y}^{(r + 1)}$ given $\bm{y}^{(r)}$, called **transition kernel**.
+- In other words, the conditional distribution of $\textbf{Y}^{(r + 1)}$ given $\textbf{y}^{(0)}, \dots, \textbf{y}^{(r)}$ is the same as the conditional distribution of $\textbf{Y}^{(r + 1)}$ given $\textbf{y}^{(r)}$, called **transition kernel**.
 
-- Given an initial condition $\bm{y}^{(0)}$ a Markov chain is fully characterized by its transition kernel, which we assume does not depend on $r$ (**homogeneity**). 
+- Given an initial condition $\textbf{y}^{(0)}$ a Markov chain is fully characterized by its transition kernel, which we assume does not depend on $r$ (**homogeneity**). 
 
 - In continuous cases, the transition kernel is identified by a **conditional density**, denoted with
 $$
-k(\bm{y}^{(r+1)} \mid \bm{y}^{(r)}).
+k(\textbf{y}^{(r+1)} \mid \textbf{y}^{(r)}).
 $$
 
 - When the sample space is finite, the transition kernel is a **transition matrix**, say $P$.
@@ -128,12 +129,12 @@ plot(y_stat, type = "l")
 
 - An increased level of stability of a Markov chain occurs when the latter admits an **invariant** or **stationary** probability distribution.
 
-- A probability density $\pi(\bm{y})$ is invariant for a Markov chain with kernel $k$ if
+- A probability density $\pi(\textbf{y})$ is invariant for a Markov chain with kernel $k$ if
 $$
-\pi(\bm{y}^*) = \int k(\bm{y}^* \mid \bm{y})\pi(\bm{y})\mathrm{d}\bm{y}.
+\pi(\textbf{y}^*) = \int k(\textbf{y}^* \mid \textbf{y})\pi(\textbf{y})\mathrm{d}\textbf{y}.
 $$
 
-- This is to say that the **marginal** distributions of $\bm{Y}^{(r)}$ and  $\bm{Y}^{(r + 1)}$ are the same and are equal to $\pi(\bm{y})$, although $\bm{Y}^{(r)}$ and  $\bm{Y}^{(r + 1)}$ remain **dependent**.
+- This is to say that the **marginal** distributions of $\textbf{Y}^{(r)}$ and  $\textbf{Y}^{(r + 1)}$ are the same and are equal to $\pi(\textbf{y})$, although $\textbf{Y}^{(r)}$ and  $\textbf{Y}^{(r + 1)}$ remain **dependent**.
 
 - Roughly speaking, if a Markov chain admits a stationary distribution + some technical conditions, then for $R$ large enough the chain "stabilizes" around the invariant law.
 
@@ -143,15 +144,15 @@ $$
 
 - Not every Markov chain admits a stationary law. However, the Markov chains constructed for sampling purposes should always converge to an invariant distribution.
 
-- Indeed, in Markov Chain Monte Carlo the stationary distribution $\pi(\bm{y})$ represents the **target density** from which we wish to simulate. 
+- Indeed, in Markov Chain Monte Carlo the stationary distribution $\pi(\textbf{y})$ represents the **target density** from which we wish to simulate. 
 
 - Then, we will make use of the following approximation 
 $$
-\int g(\bm{y}) \pi(\bm{y})\mathrm{d}\bm{y} \approx \frac{1}{R}\sum_{r=1}^R g(\bm{y}^{(r)}),
+\int g(\textbf{y}) \pi(\textbf{y})\mathrm{d}\textbf{y} \approx \frac{1}{R}\sum_{r=1}^R g(\textbf{y}^{(r)}),
 $$
-where $\bm{y}^{(1)}, \dots, \bm{y}^{(R)}$ are generated according to a Markov chain, with $\bm{y}^{(0)} \sim \pi(\bm{y})$. 
+where $\textbf{y}^{(1)}, \dots, \textbf{y}^{(R)}$ are generated according to a Markov chain, with $\textbf{y}^{(0)} \sim \pi(\textbf{y})$. 
 
-- How to construct a Markov chain that converges to the desired density $\pi(\bm{y})$?
+- How to construct a Markov chain that converges to the desired density $\pi(\textbf{y})$?
 
 - Before delving into this key problem, let us briefly review the assumptions under which this approximation is a reasonable one. 
 
