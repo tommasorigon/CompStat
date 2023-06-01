@@ -19,8 +19,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-
-In this unit we discuss several (adaptive) MCMC strategies that have been presented in the [**slides of unit B.1**](../slides/un_B1.pdf). We will implement these proposals using the "famous" **Pima indian dataset**. The purpose of this unit is mainly presenting the implementation of the various MCMC algorithms and not making "inference" about their general performance. Refer to the nice paper by [Chopin & Ridgway (2017)](https://projecteuclid.org/journals/statistical-science/volume-32/issue-1/Leave-Pima-Indians-Alone--Binary-Regression-as-a-Benchmark/10.1214/16-STS581.full) for a more comprehensive discussion on this aspect. 
+In this unit we discuss several (adaptive) MCMC strategies that have been presented in the [**slides of unit B.1**](../slides/un_B1.pdf). We will implement these proposals using the "famous" **Pima indian dataset**. The purpose of this unit is mainly presenting the implementation of the various MCMC algorithms and not making "inference" about their general performance. Refer to the nice paper by [Chopin & Ridgway (2017)](https://projecteuclid.org/journals/statistical-science/volume-32/issue-1/Leave-Pima-Indians-Alone--Binary-Regression-as-a-Benchmark/10.1214/16-STS581.full) for a more comprehensive discussion on this aspect.
 
 ## The Pima indian dataset
 
@@ -46,8 +45,7 @@ Let $\textbf{y} = (y_1,\dots,y_n)^\intercal$ be the vector of the observed **bin
 
 $$
 y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\eta_i), \qquad \eta_i = \beta_1x_{i1} + \cdots + \beta_p x_{ip},
-$$
-where the link function $g(\cdot)$ is either the inverse logit transform (`plogis` function) or the cumulative distribution function of a standard normal (`pnorm` function).  We wish to estimate the parameter vector ${\bf \beta} = (\beta_1,\dots,\beta_p)^\intercal$. To fix the ideas, we are interested in the Bayesian counterpart of the following models for binary data:
+$$ where the link function $g(\cdot)$ is either the inverse logit transform (`plogis` function) or the cumulative distribution function of a standard normal (`pnorm` function). We wish to estimate the parameter vector ${\bf \beta} = (\beta_1,\dots,\beta_p)^\intercal$. To fix the ideas, we are interested in the Bayesian counterpart of the following models for binary data:
 
 ```{r}
 # Probit model
@@ -56,11 +54,11 @@ fit_probit <- glm(type ~ X - 1, family = binomial(link = "probit"), data = Pima)
 fit_logit <- glm(type ~ X - 1, family = binomial(link = "logit"), data = Pima)
 ```
 
-The focus of this presentation is on the computational aspects, so we will employ a relatively **vague prior** centered at $0$, namely 
+The focus of this presentation is on the computational aspects, so we will employ a relatively **vague prior** centered at $0$, namely
 
-$$\beta \sim N(0, 100 I_p).$$ 
+$$\beta \sim N(0, 100 I_p).$$
 
-The reader should be aware that much better prior specification exist; see for example [Gelman et al. ( 2008)](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-2/issue-4/A-weakly-informative-default-prior-distribution/10.1214/08-AOAS191.full). 
+The reader should be aware that much better prior specification exist; see for example [Gelman et al. ( 2008)](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-2/issue-4/A-weakly-informative-default-prior-distribution/10.1214/08-AOAS191.full).
 
 We now turn to the implementation of some basic quantity. In first place, we code the log-likelihood and the log-posterior functions. We consider here the **logistic** case.
 
@@ -77,10 +75,9 @@ logpost <- function(beta, y, X) {
 }
 ```
 
-
 ## Metropolis-Hastings
 
-The first algorithm we consider is a vanilla **Metropolis-Hastings** algorithm. Below we propose a relatively efficient implementation, which is very similar to the one employed in the [**Markdown of unit A.1**](un_A1.html), with the obvious modifications. 
+The first algorithm we consider is a vanilla **Metropolis-Hastings** algorithm. Below we propose a relatively efficient implementation, which is very similar to the one employed in the [**Markdown of unit A.1**](un_A1.html), with the obvious modifications.
 
 ```{r, cache=T}
 # R represent the number of samples
@@ -114,7 +111,7 @@ RMH <- function(R, burn_in, y, X, S) {
 }
 ```
 
-We sample `R = 30000` values after a burn-in period of `30000` draws, for a total of `60000` iterations.  The performance of the algorithm (effective sample size) are stored in the `summary_tab` object. In this unit we will consider $5$ different MCMC algorithms, and we store their name as well. 
+We sample `R = 30000` values after a burn-in period of `30000` draws, for a total of `60000` iterations. The performance of the algorithm (effective sample size) are stored in the `summary_tab` object. In this unit we will consider $5$ different MCMC algorithms, and we store their name as well.
 
 ```{r}
 library(coda)
@@ -127,7 +124,7 @@ colnames(summary_tab) <- c("Seconds", "Average ESS", "Average ESS per sec", "Ave
 rownames(summary_tab) <- c("Vanilla MH", "Laplace MH", "Adaptive MH", "Metropolis within Gibbs", "Adaptive Metropolis within Gibbs")
 ```
 
-In order to run the algorithm, we need to specify the **covariance matrix** `S` of the proposal distribution. In the absence of some sensible suggestion, we initially try $S = \text{diag}(10^{-3},\dots,10^{-3})$. This could (and will) be an poor choice, leading to a highly autocorrelated chain. We will explore alternative specifications for `S` later on. The final result is decent, but the mixing can be certainly improved. 
+In order to run the algorithm, we need to specify the **covariance matrix** `S` of the proposal distribution. In the absence of some sensible suggestion, we initially try $S = \text{diag}(10^{-3},\dots,10^{-3})$. This could (and will) be an poor choice, leading to a highly autocorrelated chain. We will explore alternative specifications for `S` later on. The final result is decent, but the mixing can be certainly improved.
 
 ```{r, cache=T}
 set.seed(123)
@@ -159,8 +156,7 @@ plot(fit_MCMC[, 3:4])
 
 ### Laplace approximation
 
-
-As suggested, among many others, by [Roberts and Rosenthal (2009)](https://www.tandfonline.com/doi/abs/10.1198/jcgs.2009.06134), the **asymptotically optimal** covariance matrix `S` is equal to $2.38^2 \Sigma / p$, where $\Sigma$ is the unknown covariance matrix of the posterior distribution.  In this second approach, we obtain a rough estimate of $\Sigma$ using a **quadratic approximation** of the likelihood function. In the logistic case, this can be easily obtained with the `vcov` built-in R function. 
+As suggested, among many others, by [Roberts and Rosenthal (2009)](https://www.tandfonline.com/doi/abs/10.1198/jcgs.2009.06134), the **asymptotically optimal** covariance matrix `S` is equal to $2.38^2 \Sigma / p$, where $\Sigma$ is the unknown covariance matrix of the posterior distribution. In this second approach, we obtain a rough estimate of $\Sigma$ using a **quadratic approximation** of the likelihood function. In the logistic case, this can be easily obtained with the `vcov` built-in R function.
 
 ```{r}
 set.seed(123)
@@ -200,10 +196,9 @@ We consider here a version of the **Adaptive Metropolis (AM)** algorithm of [Haa
 
 We use the following (adaptive) proposal distribution:
 
-$$q_r({\bf \beta}^* \mid {\bf \beta}) \sim N({\bf \beta}, \:2.38^2 / p \: \Sigma_r + \epsilon  I_p),$$ 
+$$q_r({\bf \beta}^* \mid {\bf \beta}) \sim N({\bf \beta}, \:2.38^2 / p \: \Sigma_r + \epsilon  I_p),$$
 
-where $\Sigma_r$ is the covariance matrix of the previously $r$ sampled values $\beta^{(1)},\dots,\beta^{(r)}$ and $\epsilon > 0$ is some small value that avoid degeneracies (i.e. the matrix $\Sigma_r$ must be invertible). Here, we will use $\epsilon = 10^{-6}$. Moreover, note that the following **recursive formula** holds true: 
-$$
+where $\Sigma_r$ is the covariance matrix of the previously $r$ sampled values $\beta^{(1)},\dots,\beta^{(r)}$ and $\epsilon > 0$ is some small value that avoid degeneracies (i.e. the matrix $\Sigma_r$ must be invertible). Here, we will use $\epsilon = 10^{-6}$. Moreover, note that the following **recursive formula** holds true: $$
 \Sigma_r = \frac{1}{r - 1}\sum_{j=1}^r(\beta^{(j)} - \bar{\beta}^{(r)})(\beta^{(j)} - \bar{\beta}^{(r)})^\intercal = \frac{r - 2}{r - 1}\Sigma_{r-1} + \frac{1}{r}(\beta^{(r)} - \bar{\beta}^{(r-1)})(\beta^{(r)} - \bar{\beta}^{(r-1)})^\intercal.
 $$
 
@@ -281,9 +276,9 @@ summary_tab[3, ] <- c(
 plot(fit_MCMC[, 1:2])
 ```
 
-## Metropolis within Gibbs 
+## Metropolis within Gibbs
 
-We now consider a **Metropolis within Gibbs** strategy. The object `se` include the standard errors of the proposals for each parameter. The default choice  
+We now consider a **Metropolis within Gibbs** strategy. The object `se` include the standard errors of the proposals for each parameter. The default choice
 
 ```{r}
 RMH_Gibbs <- function(R, burn_in, y, X, se) {
@@ -340,12 +335,11 @@ summary_tab[4, ] <- c(
 plot(fit_MCMC[, 1:2])
 ```
 
-
-## Adaptive Metropolis within Gibbs 
+## Adaptive Metropolis within Gibbs
 
 Finally, we consider here the **Adaptive Metropolis within Gibbs** algorithm of [Roberts and Rosenthal (2009)](https://www.tandfonline.com/doi/abs/10.1198/jcgs.2009.06134). The algorithm proceeds as in the standard Metropolis within Gibbs algorithm, but the standard errors of the proposal are updated at each iteration.
 
-Every $50$ iterations, the algorithm increases or decreases the standard errors `se` according to the acceptance rate. As a rule of thumb, the "optimal" acceptance rate is about $0.44$ in the Metropolis within Gibbs case. 
+Every $50$ iterations, the algorithm increases or decreases the standard errors `se` according to the acceptance rate. As a rule of thumb, the "optimal" acceptance rate is about $0.44$ in the Metropolis within Gibbs case.
 
 ```{r}
 RMH_Gibbs_Adaptive <- function(R, burn_in, y, X, target = 0.44) {
@@ -399,7 +393,6 @@ RMH_Gibbs_Adaptive <- function(R, burn_in, y, X, target = 0.44) {
 }
 ```
 
-
 ```{r, cache=T}
 set.seed(123)
 # Running the MCMC
@@ -423,13 +416,10 @@ summary_tab[5, ] <- c(
 plot(fit_MCMC[, 1:2])
 ```
 
-
-
 ## Summary statistics
 
-The summary statistics of all the above algorithm are reported in the table below. 
+The summary statistics of all the above algorithm are reported in the table below.
 
 ```{r, echo=F}
 knitr::kable(summary_tab, digits=2)
 ```
-
