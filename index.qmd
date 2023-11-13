@@ -19,6 +19,15 @@ editor_options:
   chunk_output_type: console
 ---
 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-H0CBBT90DC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-H0CBBT90DC');
+</script>
 
 **Bayesian computations** is a module of the PhD course [Bayesian statistics](https://tommasorigon.github.io/BayesStat/). The course covers both theoretical and programming aspects. 
 
