@@ -4,26 +4,25 @@ subtitle: "Ph.D. in Economics, Statistics, and Data Science - University of Mila
 author:
   name: Tommaso Rigon
   affiliation: DEMS
+page-layout: full
 format:
   html:
-    theme: cosmo
+    html-math-method: katex
+    echo: true
+    callout-appearance: minimal
+    theme: [simplex, template.css]
     toc: true
-    embed-resources: true
+    embed-resources: false
     code-line-numbers: true
     smooth-scroll: true
-    execute:
-      echo: true
-      message: false
-      warning: false
-editor_options: 
-  chunk_output_type: console
+    fig-dpi: 250
 ---
 
-**Bayesian computations** is a module of the PhD course [Bayesian statistics](https://tommasorigon.github.io/BayesStat/). The course covers both theoretical and programming aspects. 
+[Bayesian computations]{.blue} is a module of the PhD course [Bayesian statistics](https://tommasorigon.github.io/BayesStat/). The course covers both theoretical and programming aspects. 
 
 ## Prerequisites
 
-The course is **modular**, meaning that depending on the background of the participants different units will be covered. However, it is assumed the knowledge of the following topics:
+The course is [modular]{.blue}, meaning that depending on the background of the participants different units will be covered. However, it is assumed the knowledge of the following topics:
 
   * Fundamentals of Bayesian statistics. Refer to Chapters 1-5 of Hoff (2009).
   * Monte Carlo integration. Refer to Chapter 3 of Robert and Casella (2009), or Chapter 4 of Hoff (2009).
