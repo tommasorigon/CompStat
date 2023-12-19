@@ -1,5 +1,0 @@
-[1,"Installing 'expm' ...\n"]
-[2,"trying URL 'https://cran.rstudio.com/bin/macosx/big-sur-arm64/contrib/4.3/expm_0.999-8.tgz'\nContent type 'application/x-gzip' length 242118 bytes (236 KB)\n======"]
-[1,"The downloaded binary packages are in\n"]
-[1,"\t/var/folders/fx/_f2m8c1d0xd7mqykb5_gcqdr0000gn/T//RtmpVqxDxD/downloaded_packages\n"]
-[2,"============================================\ndownloaded 236 KB\n\n\n\n✔ Package 'expm' successfully installed.\n"]
