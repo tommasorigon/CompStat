@@ -1,0 +1,512 @@
+Pb <- c(P %*% b)
+Pdet <- ldet(P)
+# Initialization for omega equal to 0.25
+P_vb <- crossprod(X * rep(1 / 4, n), X) + P
+Sigma_vb <- solve(P_vb)
+mu_vb <- Sigma_vb %*% (crossprod(X, y - 0.5) + Pb)
+eta <- c(X %*% mu_vb)
+xi <- sqrt(eta^2 + rowSums(X %*% Sigma_vb * X))
+omega <- tanh(xi / 2) / (2 * xi)
+omega[is.nan(omega)] <- 0.25
+lowerbound[1] <- 0.5 * p + 0.5 * ldet(Sigma_vb) + 0.5 * Pdet - 0.5 * t(mu_vb - b) %*% P %*% (mu_vb - b) + sum((y - 0.5) * eta + log(plogis(xi)) - 0.5 * xi) - 0.5 * sum(diag(P %*% Sigma_vb))
+# Iterative procedure
+for (t in 2:maxiter) {
+P_vb <- crossprod(X * omega, X) + P
+Sigma_vb <- solve(P_vb)
+mu_vb <- Sigma_vb %*% (crossprod(X, y - 0.5) + Pb)
+# Update of xi
+eta <- c(X %*% mu_vb)
+xi <- sqrt(eta^2 + rowSums(X %*% Sigma_vb * X))
+omega <- tanh(xi / 2) / (2 * xi)
+omega[is.nan(omega)] <- 0.25
+lowerbound[t] <- 0.5 * p + 0.5 * ldet(Sigma_vb) + 0.5 * Pdet - 0.5 * t(mu_vb - b) %*% P %*% (mu_vb - b) + sum((y - 0.5) * eta + log(plogis(xi)) - 0.5 * xi) - 0.5 * sum(diag(P %*% Sigma_vb))
+if (abs(lowerbound[t] - lowerbound[t - 1]) < tol) {
+return(list(
+mu = c(mu_vb), Sigma = matrix(Sigma_vb, p, p),
+Convergence = cbind(
+Iteration = (1:t) - 1,
+Lowerbound = lowerbound[1:t]
+), xi = xi
+))
+}
+}
+stop("The algorithm has not reached convergence")
+}
+# Chunk 10
+library(tictoc)
+tic()
+fit_CAVI <- logit_CAVI(y, X, B, b)
+toc()
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "", ylim = c(0,0.09))
+curve(dnorm(x, fit_CAVI$mu[1], sqrt(fit_CAVI$Sigma[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "", ylim = c(0,6.2))
+curve(dnorm(x, fit_CAVI$mu[2], sqrt(fit_CAVI$Sigma[2, 2])), add = T)
+# Chunk 11
+cov2cor(cov(fit_MCMC))
+cov2cor(fit_CAVI$Sigma)
+# Chunk 12
+library(EPGLM)
+tic()
+fit_EP <- EPlogit(X, y, s = B[1, 1])
+toc()
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "")
+curve(dnorm(x, fit_EP$m[1], sqrt(fit_EP$V[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "")
+curve(dnorm(x, fit_EP$m[2], sqrt(fit_EP$V[2, 2])), add = T)
+# Chunk 13
+cov2cor(cov(fit_MCMC))
+cov2cor(fit_EP$V)
+# Chunk 14
+logit_HL <- function(y, X, B, b, tol = 1e-16, maxiter = 10000){
+fit_HL <- logit_CAV(y, X, B, b, tol, maxiter)
+prob <- plogis(eta %*% fit_CAVI$mu)
+fit_HL$Sigma <- solve(crossprod(X * prob * (1 - prob), X) + solve(B))
+fit_HL
+}
+fit_HL <- logit_HL(y, X, B, b)
+logit_HL <- function(y, X, B, b, tol = 1e-16, maxiter = 10000){
+fit_HL <- logit_CAVI(y, X, B, b, tol, maxiter)
+prob <- plogis(eta %*% fit_CAVI$mu)
+fit_HL$Sigma <- solve(crossprod(X * prob * (1 - prob), X) + solve(B))
+fit_HL
+}
+fit_HL <- logit_HL(y, X, B, b)
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "")
+fit_HL <- logit_HL(y, X, B, b)
+prob <- plogis(X %*% fit_CAVI$mu)
+logit_HL <- function(y, X, B, b, tol = 1e-16, maxiter = 10000){
+fit_HL <- logit_CAVI(y, X, B, b, tol, maxiter)
+prob <- plogis(X %*% fit_CAVI$mu)
+fit_HL$Sigma <- solve(crossprod(X * prob * (1 - prob), X) + solve(B))
+fit_HL
+}
+fit_HL <- logit_HL(y, X, B, b)
+fit_CAVI$mu
+X
+fit_CAVI$mu
+prob <- plogis(X %*% fit_CAVI$mu)
+fit_HL$Sigma <- solve(crossprod(X * prob * (1 - prob), X) + solve(B))
+X * prob * (1 - prob)
+prob * (1 - prob)
+logit_HL <- function(y, X, B, b, tol = 1e-16, maxiter = 10000){
+fit_HL <- logit_CAVI(y, X, B, b, tol, maxiter)
+prob <- c(plogis(X %*% fit_CAVI$mu))
+fit_HL$Sigma <- solve(crossprod(X * prob * (1 - prob), X) + solve(B))
+fit_HL
+}
+fit_HL <- logit_HL(y, X, B, b)
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "")
+curve(dnorm(x, fit_HL$mu[1], sqrt(fit_HL$Sigma[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "")
+curve(dnorm(x, fit_HL$mean[2], sqrt(fit_HL$Sigma[2, 2])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "")
+curve(dnorm(x, fit_HL$mu[2], sqrt(fit_HL$Sigma[2, 2])), add = T)
+fit_HL <- logit_HL(y, X, B, b)
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "")
+curve(dnorm(x, fit_HL$mu[1], sqrt(fit_HL$Sigma[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "")
+curve(dnorm(x, fit_HL$mu[2], sqrt(fit_HL$Sigma[2, 2])), add = T)
+cov2cor(fit_HL$Sigma)
+Means <- data.frame(
+MCMC = mu_MCMC,
+Laplace = fit_Laplace$mu,
+VB = fit_CAVI$mu,
+EP = fit_EP$m,
+HL = fit_HL$mu
+)
+knitr::kable(Means, digits = 4)
+Errors <- data.frame(
+Laplace = (fit_Laplace$mu - mu_MCMC),
+VB = (fit_CAVI$mu - mu_MCMC),
+EP = (fit_EP$m - mu_MCMC),
+HL = (fit_HL$mu - mu_MCMC)
+)
+knitr::kable(Errors, digits = 4)
+Errors_perc <- data.frame(
+Laplace = (fit_Laplace$mu - mu_MCMC) / mu_MCMC * 100,
+VB = (fit_CAVI$mu - mu_MCMC) / mu_MCMC * 100,
+EP = (fit_EP$m - mu_MCMC) / mu_MCMC * 100,
+HL = (fit_HL$mu - mu_MCMC) / mu_MCMC * 100
+)
+knitr::kable(Errors_perc, digits = 4)
+Sd <- data.frame(
+MCMC = sqrt(diag(var(fit_MCMC))),
+Laplace = sqrt(diag(fit_Laplace$Sigma)),
+VB = sqrt(diag(fit_CAVI$Sigma)),
+EP = sqrt(diag(fit_EP$V)),
+HL = sqrt(diag(fit_HL$Sigma))
+)
+knitr::kable(Sd, digits = 4, row.names = F)
+Sd <- data.frame(
+MCMC = sqrt(diag(var(fit_MCMC))),
+Laplace = sqrt(diag(fit_Laplace$Sigma)),
+VB = sqrt(diag(fit_CAVI$Sigma)),
+EP = sqrt(diag(fit_EP$V)),
+HL = sqrt(diag(fit_HL$Sigma))
+)
+knitr::kable(Sd, digits = 4, row.names = F)
+KL_gauss <- function(mu1, Sigma1, mu2, Sigma2){
+p <- ncol(Sigma1)
+c(0.5*(ldet(Sigma2) - ldet(Sigma1) - p + sum(diag(solve(Sigma2) %*% Sigma1)) + t(mu2 - mu1) %*% solve(Sigma2) %*% (mu2 - mu1)))
+}
+library(expm)
+dWass_gauss <- function(mu1, Sigma1, mu2, Sigma2){
+Sigma2_r <- sqrtm(Sigma2)
+c(crossprod(mu2 - mu1) + sum(diag(Sigma1 + Sigma2 - 2*sqrtm(Sigma2_r %*% Sigma1 %*% Sigma2_r))))
+}
+styler:::style_active_file()
+# Chunk 1: startup
+knitr::opts_chunk$set(echo = T, eval = T, message = F, warning = F, error = F, comment = NA, cache = F, include = T, R.options = list(width = 100), collapse = T, dpi = 200, fig.align = "center", fig.height = 6, fig.width = 8)
+# Chunk 2
+Pima <- rbind(MASS::Pima.tr, MASS::Pima.te)
+y <- as.numeric(Pima$type == "Yes") # Binary outcome
+X <- cbind(1, model.matrix(type ~ . - 1, data = Pima)) # Design matrix
+# Chunk 3
+B <- diag(100, ncol(X)) # Prior covariance matrix
+b <- rep(0, ncol(X)) # Prior mean
+# Chunk 4
+library(BayesLogit)
+logit_Gibbs <- function(R, burn_in, y, X, B, b) {
+p <- ncol(X)
+n <- nrow(X)
+out <- matrix(0, R, p) # Initialize an empty matrix to store the values
+P <- solve(B) # Prior precision matrix
+Pb <- P %*% b # Term appearing in the Gibbs sampling
+Xy <- crossprod(X, y - 1 / 2)
+# Initialization
+beta <- rep(0, p)
+# Iterative procedure
+for (r in 1:(R + burn_in)) {
+# Sampling the Pólya-gamma latent variables
+eta <- c(X %*% beta)
+omega <- rpg.devroye(num = n, h = 1, z = eta)
+# Sampling beta
+eig <- eigen(crossprod(X * sqrt(omega)) + P, symmetric = TRUE)
+Sigma <- crossprod(t(eig$vectors) / sqrt(eig$values))
+mu <- Sigma %*% (Xy + Pb)
+A1 <- t(eig$vectors) / sqrt(eig$values)
+beta <- mu + c(matrix(rnorm(1 * p), 1, p) %*% A1)
+# Store the values after the burn-in period
+if (r > burn_in) {
+out[r - burn_in, ] <- beta
+}
+}
+out
+}
+# Chunk 5
+set.seed(123)
+# Running the MCMC
+fit_MCMC <- logit_Gibbs(R = 50000, burn_in = 5000, y, X, B, b) # MCMC (gold standard)
+# Chunk 6
+logit_Laplace <- function(y, X, B, b, tol = 1e-16, maxiter = 10000) {
+P <- solve(B) # Prior precision matrix
+Pb <- P %*% b # Term appearing in the Gibbs sampling
+logpost <- numeric(maxiter)
+Xy <- crossprod(X, y - 0.5)
+# Initialization
+beta <- solve(crossprod(X / 4, X) + P, Xy + Pb)
+eta <- c(X %*% beta)
+w <- tanh(eta / 2) / (2 * eta)
+w[is.nan(w)] <- 0.25
+# First value of the likelihood
+logpost[1] <- sum(y * eta - log(1 + exp(eta))) - 0.5 * t(beta) %*% P %*% beta
+# Iterative procedure
+for (t in 2:maxiter) {
+beta <- solve(qr(crossprod(X * w, X) + P), Xy + Pb)
+eta <- c(X %*% beta)
+w <- tanh(eta / 2) / (2 * eta)
+w[is.nan(w)] <- 0.25
+logpost[t] <- sum(y * eta - log(1 + exp(eta))) - 0.5 * t(beta) %*% P %*% beta
+if (logpost[t] - logpost[t - 1] < tol) {
+prob <- plogis(eta)
+return(list(
+mu = c(beta), Sigma = solve(crossprod(X * prob * (1 - prob), X) + P),
+Convergence = cbind(Iteration = (1:t) - 1, logpost = logpost[1:t])
+))
+}
+}
+stop("The algorithm has not reached convergence")
+}
+library(tictoc)
+library(ggplot2)
+tic()
+fit_Laplace <- logit_Laplace(y, X, B, b)
+toc()
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "")
+curve(dnorm(x, fit_Laplace$mu[1], sqrt(fit_Laplace$Sigma[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "")
+curve(dnorm(x, fit_Laplace$mu[2], sqrt(fit_Laplace$Sigma[2, 2])), add = T)
+# Compute the log-determinant of a matrix
+ldet <- function(X) {
+if (!is.matrix(X)) {
+return(log(X))
+}
+determinant(X, logarithm = TRUE)$modulus
+}
+logit_CAVI <- function(y, X, B, b, tol = 1e-16, maxiter = 10000) {
+lowerbound <- numeric(maxiter)
+p <- ncol(X)
+n <- nrow(X)
+P <- solve(B)
+Pb <- c(P %*% b)
+Pdet <- ldet(P)
+# Initialization for omega equal to 0.25
+P_vb <- crossprod(X * rep(1 / 4, n), X) + P
+Sigma_vb <- solve(P_vb)
+mu_vb <- Sigma_vb %*% (crossprod(X, y - 0.5) + Pb)
+eta <- c(X %*% mu_vb)
+xi <- sqrt(eta^2 + rowSums(X %*% Sigma_vb * X))
+omega <- tanh(xi / 2) / (2 * xi)
+omega[is.nan(omega)] <- 0.25
+lowerbound[1] <- 0.5 * p + 0.5 * ldet(Sigma_vb) + 0.5 * Pdet - 0.5 * t(mu_vb - b) %*% P %*% (mu_vb - b) + sum((y - 0.5) * eta + log(plogis(xi)) - 0.5 * xi) - 0.5 * sum(diag(P %*% Sigma_vb))
+# Iterative procedure
+for (t in 2:maxiter) {
+P_vb <- crossprod(X * omega, X) + P
+Sigma_vb <- solve(P_vb)
+mu_vb <- Sigma_vb %*% (crossprod(X, y - 0.5) + Pb)
+# Update of xi
+eta <- c(X %*% mu_vb)
+xi <- sqrt(eta^2 + rowSums(X %*% Sigma_vb * X))
+omega <- tanh(xi / 2) / (2 * xi)
+omega[is.nan(omega)] <- 0.25
+lowerbound[t] <- 0.5 * p + 0.5 * ldet(Sigma_vb) + 0.5 * Pdet - 0.5 * t(mu_vb - b) %*% P %*% (mu_vb - b) + sum((y - 0.5) * eta + log(plogis(xi)) - 0.5 * xi) - 0.5 * sum(diag(P %*% Sigma_vb))
+if (abs(lowerbound[t] - lowerbound[t - 1]) < tol) {
+return(list(
+mu = c(mu_vb), Sigma = matrix(Sigma_vb, p, p),
+Convergence = cbind(
+Iteration = (1:t) - 1,
+Lowerbound = lowerbound[1:t]
+), xi = xi
+))
+}
+}
+stop("The algorithm has not reached convergence")
+}
+library(tictoc)
+tic()
+fit_CAVI <- logit_CAVI(y, X, B, b)
+toc()
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "", ylim = c(0, 0.09))
+curve(dnorm(x, fit_CAVI$mu[1], sqrt(fit_CAVI$Sigma[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "", ylim = c(0, 6.2))
+curve(dnorm(x, fit_CAVI$mu[2], sqrt(fit_CAVI$Sigma[2, 2])), add = T)
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "", ylim = c(0, 0.1))
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "", ylim = c(0, 0.5))
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "")
+curve(dnorm(x, fit_CAVI$mu[1], sqrt(fit_CAVI$Sigma[1, 1])), add = T)
+library(tictoc)
+tic()
+fit_CAVI <- logit_CAVI(y, X, B, b)
+toc()
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "", ylim = c(0, 0.6))
+curve(dnorm(x, fit_CAVI$mu[1], sqrt(fit_CAVI$Sigma[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "", ylim = c(0, 6.2))
+curve(dnorm(x, fit_CAVI$mu[2], sqrt(fit_CAVI$Sigma[2, 2])), add = T)
+library(tictoc)
+tic()
+fit_CAVI <- logit_CAVI(y, X, B, b)
+toc()
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "", ylim = c(0, 0.6))
+curve(dnorm(x, fit_CAVI$mu[1], sqrt(fit_CAVI$Sigma[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "", ylim = c(0, 8.2))
+curve(dnorm(x, fit_CAVI$mu[2], sqrt(fit_CAVI$Sigma[2, 2])), add = T)
+library(tictoc)
+tic()
+fit_CAVI <- logit_CAVI(y, X, B, b)
+toc()
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "", ylim = c(0, 0.6))
+curve(dnorm(x, fit_CAVI$mu[1], sqrt(fit_CAVI$Sigma[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "", ylim = c(0, 10))
+curve(dnorm(x, fit_CAVI$mu[2], sqrt(fit_CAVI$Sigma[2, 2])), add = T)
+library(tictoc)
+tic()
+fit_CAVI <- logit_CAVI(y, X, B, b)
+toc()
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "", ylim = c(0, 0.6))
+curve(dnorm(x, fit_CAVI$mu[1], sqrt(fit_CAVI$Sigma[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "", ylim = c(0, 12))
+curve(dnorm(x, fit_CAVI$mu[2], sqrt(fit_CAVI$Sigma[2, 2])), add = T)
+library(EPGLM)
+tic()
+fit_EP <- EPlogit(X, y, s = B[1, 1])
+toc()
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "")
+curve(dnorm(x, fit_EP$m[1], sqrt(fit_EP$V[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "")
+curve(dnorm(x, fit_EP$m[2], sqrt(fit_EP$V[2, 2])), add = T)
+logit_HL <- function(y, X, B, b, tol = 1e-16, maxiter = 10000) {
+fit_HL <- logit_CAVI(y, X, B, b, tol, maxiter)
+prob <- c(plogis(X %*% fit_CAVI$mu))
+fit_HL$Sigma <- solve(crossprod(X * prob * (1 - prob), X) + solve(B))
+fit_HL
+}
+fit_HL <- logit_HL(y, X, B, b)
+par(mfrow = c(1, 2))
+plot(density(fit_MCMC[, 1]), xlab = expression(beta[1]), lty = "dotted", main = "")
+curve(dnorm(x, fit_HL$mu[1], sqrt(fit_HL$Sigma[1, 1])), add = T)
+plot(density(fit_MCMC[, 2]), xlab = expression(beta[2]), lty = "dotted", main = "")
+curve(dnorm(x, fit_HL$mu[2], sqrt(fit_HL$Sigma[2, 2])), add = T)
+knitr::kable(tab, digits = 4)
+# Chunk 1: startup
+knitr::opts_chunk$set(echo = T, eval = T, message = F, warning = F, error = F, comment = NA, cache = F, include = T, R.options = list(width = 100), collapse = T, dpi = 200, fig.align = "center", fig.height = 6, fig.width = 8)
+# Chunk 2
+Pima <- rbind(MASS::Pima.tr, MASS::Pima.te)
+y <- as.numeric(Pima$type == "Yes") # Binary outcome
+X <- cbind(1, model.matrix(type ~ . - 1, data = Pima)) # Design matrix
+# Chunk 3
+B <- diag(100, ncol(X)) # Prior covariance matrix
+b <- rep(0, ncol(X)) # Prior mean
+# Chunk 4
+library(BayesLogit)
+logit_Gibbs <- function(R, burn_in, y, X, B, b) {
+p <- ncol(X)
+n <- nrow(X)
+out <- matrix(0, R, p) # Initialize an empty matrix to store the values
+P <- solve(B) # Prior precision matrix
+Pb <- P %*% b # Term appearing in the Gibbs sampling
+Xy <- crossprod(X, y - 1 / 2)
+# Initialization
+beta <- rep(0, p)
+# Iterative procedure
+for (r in 1:(R + burn_in)) {
+# Sampling the Pólya-gamma latent variables
+eta <- c(X %*% beta)
+omega <- rpg.devroye(num = n, h = 1, z = eta)
+# Sampling beta
+eig <- eigen(crossprod(X * sqrt(omega)) + P, symmetric = TRUE)
+Sigma <- crossprod(t(eig$vectors) / sqrt(eig$values))
+mu <- Sigma %*% (Xy + Pb)
+A1 <- t(eig$vectors) / sqrt(eig$values)
+beta <- mu + c(matrix(rnorm(1 * p), 1, p) %*% A1)
+# Store the values after the burn-in period
+if (r > burn_in) {
+out[r - burn_in, ] <- beta
+}
+}
+out
+}
+# Chunk 5
+set.seed(123)
+# Running the MCMC
+fit_MCMC <- logit_Gibbs(R = 10^5, burn_in = 5000, y, X, B, b) # MCMC (gold standard)
+# Chunk 6
+logit_Laplace <- function(y, X, B, b, tol = 1e-16, maxiter = 10000) {
+P <- solve(B) # Prior precision matrix
+Pb <- P %*% b # Term appearing in the Gibbs sampling
+logpost <- numeric(maxiter)
+Xy <- crossprod(X, y - 0.5)
+# Initialization
+beta <- solve(crossprod(X / 4, X) + P, Xy + Pb)
+eta <- c(X %*% beta)
+w <- tanh(eta / 2) / (2 * eta)
+w[is.nan(w)] <- 0.25
+# First value of the likelihood
+logpost[1] <- sum(y * eta - log(1 + exp(eta))) - 0.5 * t(beta) %*% P %*% beta
+# Iterative procedure
+for (t in 2:maxiter) {
+beta <- solve(qr(crossprod(X * w, X) + P), Xy + Pb)
+eta <- c(X %*% beta)
+w <- tanh(eta / 2) / (2 * eta)
+w[is.nan(w)] <- 0.25
+logpost[t] <- sum(y * eta - log(1 + exp(eta))) - 0.5 * t(beta) %*% P %*% beta
+if (logpost[t] - logpost[t - 1] < tol) {
+prob <- plogis(eta)
+return(list(
+mu = c(beta), Sigma = solve(crossprod(X * prob * (1 - prob), X) + P),
+Convergence = cbind(Iteration = (1:t) - 1, logpost = logpost[1:t])
+))
+}
+}
+stop("The algorithm has not reached convergence")
+}
+library(survival)
+data(stanford2)
+t <- stanford2$time # Survival times
+d <- stanford2$status # Censorship indicator
+# Kaplan-Meier estimate
+fit_KM <- survfit(Surv(t, d) ~ 1)
+plot(fit_KM)
+library(survival)
+data("stanford2")
+library(survival)
+rm(list=ls())
+library(survival)
+t <- stanford2$time # Survival times
+d <- stanford2$status # Censorship indicator
+# Kaplan-Meier estimate
+fit_KM <- survfit(Surv(t, d) ~ 1)
+plot(fit_KM)
+survival::stanford2
+loglik_inaccurate <- function(t, d, alpha, beta) {
+hazard <- prod((alpha / beta * (t / beta)^(alpha - 1))^d)
+survival <- prod(exp(-(t / beta)^alpha))
+log(hazard * survival)
+}
+loglik_inaccurate(t, d, alpha = 0.5, beta = 1000) # As it will be clear later on, these are likely values
+# 1st inefficient implementation
+loglik_inefficient1 <- function(t, d, alpha, beta) {
+n <- length(t) # Sample size
+log_hazards <- numeric(n)
+log_survivals <- numeric(n)
+for (i in 1:n) {
+log_hazards[i] <- d[i] * ((alpha - 1) * log(t[i] / beta) + log(alpha / beta))
+log_survivals[i] <- -(t[i] / beta)^alpha
+}
+sum(log_hazards) + sum(log_survivals)
+}
+# 2nd inefficient implementation
+loglik_inefficient2 <- function(t, d, alpha, beta) {
+n <- length(t) # Sample size
+log_hazards <- NULL
+log_survivals <- NULL
+for (i in 1:n) {
+log_hazards <- c(log_hazards, d[i] * ((alpha - 1) * log(t[i] / beta) + log(alpha / beta)))
+log_survivals <- c(log_survivals, -(t[i] / beta)^alpha)
+}
+sum(log_hazards) + sum(log_survivals)
+}
+loglik_inefficient1(t, d, alpha = 0.5, beta = 1000)
+loglik_inefficient2(t, d, alpha = 0.5, beta = 1000)
+# Efficient and numerically stable version
+loglik <- function(t, d, alpha, beta) {
+log_hazard <- sum(d * ((alpha - 1) * log(t / beta) + log(alpha / beta)))
+log_survival <- sum(-(t / beta)^alpha)
+log_hazard + log_survival
+}
+loglik(t, d, alpha = 0.5, beta = 1000)
+library(Rcpp)
+library(RcppArmadillo)
+Rcpp::sourceCpp('cpp/sum.cpp')
+install.packages("Rcpp", repos="https://rcppcore.github.io/drat")
+install.packages("Rcpp", repos = "https://rcppcore.github.io/drat")
+install.packages("Rcpp", repos = "https://rcppcore.github.io/drat")
+Rcpp::sourceCpp('cpp/sum.cpp')
+x <- c(10, 20, 5, 30, 21, 78, pi, exp(7))
+arma_sum(x) # sum of the vector x
+sum(x) # sum of the vector x - usual command
+Rcpp::sourceCpp('cpp/rnorm.cpp')
+set.seed(123)
+c(arma_rnorm(5, 0, 1)) # Rcpp implementation
+set.seed(123)
+rnorm(5, 0, 1) # Usual R command
+Rcpp::sourceCpp('cpp/rnorm.cpp')
+Rcpp::sourceCpp('cpp/rnorm.cpp')
+set.seed(123)
+c(arma_rnorm(5, 0, 1)) # Rcpp implementation
+set.seed(123)
+rnorm(5, 0, 1) # Usual R command
+rm(list=ls())

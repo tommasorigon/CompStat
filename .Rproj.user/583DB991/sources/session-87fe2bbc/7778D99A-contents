@@ -1,0 +1,103 @@
+library(coda)
+library(truncnorm)
+
+# Loglikelihood of a logistic regression model
+loglik <- function(beta, y, X) {
+  eta <- c(X %*% beta)
+  sum(y * pnorm(eta, log.p = TRUE) + (1 - y) * pnorm(eta, lower.tail = FALSE, log.p = TRUE))
+}
+
+# Logposterior
+logpost <- function(beta, y, X) {
+  loglik(beta, y, X) + sum(dnorm(beta, 0, 10, log = T))
+}
+
+RMH <- function(R, burn_in, y, X, S) {
+  p <- ncol(X)
+  out <- matrix(0, R, p) # Initialize an empty matrix to store the values
+  beta <- rep(0, p) # Initial values
+  logp <- logpost(beta, y, X)
+
+  # Eigen-decomposition
+  eig <- eigen(S, symmetric = TRUE)
+  A1 <- t(eig$vectors) * sqrt(eig$values)
+
+  # Starting the Gibbs sampling
+  for (r in 1:(burn_in + R)) {
+    beta_new <- beta + c(matrix(rnorm(p), 1, p) %*% A1)
+    logp_new <- logpost(beta_new, y, X)
+    alpha <- min(1, exp(logp_new - logp))
+    if (runif(1) < alpha) {
+      logp <- logp_new
+      beta <- beta_new # Accept the value
+    }
+    # Store the values after the burn-in period
+    if (r > burn_in) {
+      out[r - burn_in, ] <- beta
+    }
+  }
+  out
+}
+
+probit_Gibbs <- function(R, burn_in, y, X, B, b) {
+  p <- ncol(X)
+  n <- nrow(X)
+  out <- matrix(0, R, p) # Initialize an empty matrix to store the values
+
+  P <- solve(B) # Prior precision matrix
+  Pb <- P %*% b # Term appearing in the Gibbs sampling
+
+  eig <- eigen(crossprod(X) + P, symmetric = TRUE)
+  Sigma <- crossprod(t(eig$vectors) / sqrt(eig$values))
+  A1 <- t(eig$vectors) / sqrt(eig$values)
+
+  lower_bounds <- rep(-Inf, n); lower_bounds[y == 1] <- 0
+  upper_bounds <- rep(Inf, n); upper_bounds[y == 0] <- 0
+  
+  # Initialization
+  beta <- rep(0, p)
+
+  # Iterative procedure
+  for (r in 1:(R + burn_in)) {
+    # Sampling the truncated normal latent variables using truncnorm
+    eta <- c(X %*% beta)
+    z <- rtruncnorm(n = n, a = lower_bounds, b = upper_bounds, mean = eta, sd = 1)
+
+    # Sampling beta
+    Xz <- crossprod(X, z)
+    mu <- Sigma %*% (Xz + Pb)
+    beta <- mu + c(matrix(rnorm(1 * p), 1, p) %*% A1)
+
+    # Store the values after the burn-in period
+    if (r > burn_in) {
+      out[r - burn_in, ] <- beta
+    }
+  }
+  out
+}
+
+set.seed(123)
+R <- 30000
+burn_in <- 5000
+
+# Covariance matrix is selected via laplace approximation
+p <- ncol(X)
+S <- 2.38^2 * vcov(fit_probit) / p
+
+# MCMC - with Metropolis
+fit_MCMC <- as.mcmc(RMH(R, burn_in, y, X, S)) # Convert the matrix into a "coda" object
+
+# MCMC - with Albert-Chib
+B <- diag(100, ncol(X)) # Prior covariance matrix
+b <- rep(0, ncol(X)) # Prior mean
+
+fit_gibbs_MCMC <- as.mcmc(probit_Gibbs(R, burn_in, y, X, b = b, B = B)) # Convert the matrix into a "coda" object
+
+summary(fit_probit)
+summary(fit_MCMC, quantile = NULL)
+summary(fit_gibbs_MCMC, quantile = NULL)
+
+summary(effectiveSize(fit_MCMC)) # Effective sample size
+summary(effectiveSize(fit_gibbs_MCMC)) # Effective sample size
+
+summary(1 - rejectionRate(fit_MCMC)) # Acceptance rate

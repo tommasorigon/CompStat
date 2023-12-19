@@ -1,0 +1,31 @@
+{
+    "id": "6AAF4B21",
+    "path": "~/Library/Mobile Documents/com~apple~CloudDocs/University/Didattica/Computational Statistics/CompStat/exe/un_A1.qmd",
+    "project_path": "exe/un_A1.qmd",
+    "type": "quarto_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1703010601350.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "chunk_output_type": "console",
+        "cursorPosition": "11,21",
+        "scrollLine": "3",
+        "Source": "Source",
+        "rmdVisualMode": "false",
+        "rmdVisualWrapConfigured": "true",
+        "docOutlineVisible": "1",
+        "rmdVisualModeLocation": "155:0",
+        "rmdVisualCollapsedChunks": ""
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1703010667,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1703010667756,
+    "read_only": false,
+    "read_only_alternatives": []
+}
