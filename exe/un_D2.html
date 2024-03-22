@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.433">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -23,7 +23,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -87,6 +87,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </script>
   <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
 
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
 </head>
 
 <body>
@@ -97,7 +124,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-pima-indian-dataset" id="toc-the-pima-indian-dataset" class="nav-link active" data-scroll-target="#the-pima-indian-dataset">The Pima indian dataset</a></li>
+  <li><a href="#the-pima-indian-dataset" id="toc-the-pima-indian-dataset" class="nav-link active" data-scroll-target="#the-pima-indian-dataset">The Pima Indian dataset</a></li>
   <li><a href="#the-gold-standard-mcmc" id="toc-the-gold-standard-mcmc" class="nav-link" data-scroll-target="#the-gold-standard-mcmc">The gold standard: MCMC</a></li>
   <li><a href="#laplace-approximation" id="toc-laplace-approximation" class="nav-link" data-scroll-target="#laplace-approximation">Laplace approximation</a></li>
   <li><a href="#variational-bayes" id="toc-variational-bayes" class="nav-link" data-scroll-target="#variational-bayes">Variational Bayes</a></li>
@@ -119,21 +146,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 
 
-<div class="quarto-title-meta-author">
+<div class="quarto-title-meta-author column-page-left">
   <div class="quarto-title-meta-heading">Author</div>
   <div class="quarto-title-meta-heading">Affiliation</div>
   
     <div class="quarto-title-meta-contents">
     <p class="author">Tommaso Rigon </p>
   </div>
-    <div class="quarto-title-meta-contents">
+  <div class="quarto-title-meta-contents">
         <p class="affiliation">
             DEMS
           </p>
       </div>
-    </div>
+  </div>
 
-<div class="quarto-title-meta">
+<div class="quarto-title-meta column-page-left">
 
       
   
@@ -141,26 +168,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </div>
   
 
+
 </header>
 
-<p>In this unit we discuss several approximate Bayesian methods that have been presented in the <a href="../slides/un_D2.pdf"><strong>slides of unit D.2</strong></a>. We will make use of the Pima indian dataset again, as in the previous <a href="un_B1.html"><strong>Markdown document B.1</strong></a> and <a href="un_B2.html"><strong>Markdown document B.2</strong></a>. Importantly, note that in this document we will <strong>not standardize the predictors</strong> to make the computational problem more challenging.</p>
+
+<p>This unit discusses several approximate Bayesian methods presented in the <a href="../slides/un_D2.pdf"><strong>slides of unit D.2</strong></a>. We will make use of the Pima Indian dataset again, as in the previous <a href="un_B1.html"><strong>Markdown document B.1</strong></a> and <a href="un_B2.html"><strong>Markdown document B.2</strong></a>. Importantly, note that in this document, we will <strong>not standardize the predictors</strong> to make the computational problem more challenging.</p>
 <section id="the-pima-indian-dataset" class="level2">
-<h2 class="anchored" data-anchor-id="the-pima-indian-dataset">The Pima indian dataset</h2>
-<div class="cell" data-layout-align="center">
+<h2 class="anchored" data-anchor-id="the-pima-indian-dataset">The Pima Indian dataset</h2>
+<div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>Pima <span class="ot">&lt;-</span> <span class="fu">rbind</span>(MASS<span class="sc">::</span>Pima.tr, MASS<span class="sc">::</span>Pima.te)</span>
 <span id="cb1-2"><a href="#cb1-2"></a>y <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(Pima<span class="sc">$</span>type <span class="sc">==</span> <span class="st">"Yes"</span>) <span class="co"># Binary outcome</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a>X <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="dv">1</span>, <span class="fu">model.matrix</span>(type <span class="sc">~</span> . <span class="sc">-</span> <span class="dv">1</span>, <span class="at">data =</span> Pima)) <span class="co"># Design matrix</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We will employ a relatively vague prior centered at <span class="math inline">0</span>, namely <span class="math inline">\beta \sim N(0, 100 I_p)</span>.</p>
-<div class="cell" data-layout-align="center">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>B <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="dv">10</span>, <span class="fu">ncol</span>(X)) <span class="co"># Prior covariance matrix</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a>b <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">ncol</span>(X)) <span class="co"># Prior mean</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="the-gold-standard-mcmc" class="level2">
 <h2 class="anchored" data-anchor-id="the-gold-standard-mcmc">The gold standard: MCMC</h2>
-<p>In order to assess the accuracy of the approximations, we first obtain a large number of posterior samples using the Pólya-gamma data augmentation approach. This is the same code that is reported also in the last paragraph of the <a href="un_B2.html"><strong>Markdown document B.2</strong></a>.</p>
-<div class="cell" data-layout-align="center">
+<p>To assess the accuracy of the approximations, we first obtain a large number of posterior samples using the Pólya-gamma data augmentation approach. This is the code reported in the last paragraph of the <a href="un_B2.html"><strong>Markdown document B.2</strong></a>.</p>
+<div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">library</span>(BayesLogit)</span>
 <span id="cb3-2"><a href="#cb3-2"></a>logit_Gibbs <span class="ot">&lt;-</span> <span class="cf">function</span>(R, burn_in, y, X, B, b) {</span>
 <span id="cb3-3"><a href="#cb3-3"></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
@@ -199,7 +228,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-36"><a href="#cb3-36"></a>  out</span>
 <span id="cb3-37"><a href="#cb3-37"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-layout-align="center" data-hash="un_D2_cache/html/unnamed-chunk-4_e289f727f3bfcd81e5f9634ad1bbdad9">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
 <span id="cb4-2"><a href="#cb4-2"></a></span>
 <span id="cb4-3"><a href="#cb4-3"></a><span class="co"># Running the MCMC</span></span>
@@ -208,8 +237,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="laplace-approximation" class="level2">
 <h2 class="anchored" data-anchor-id="laplace-approximation">Laplace approximation</h2>
-<p>The first approach considered is the Laplace approximation. Note that the MAP is obtained using the <strong>Pólya-gamma data-augmentation</strong>, therefore ensuring a monotonic procedure. Refer to the <a href="../slides/un_D2.pdf"><strong>slides of unit D.2</strong></a> for further details.</p>
-<div class="cell" data-layout-align="center">
+<p>The first approach considered is the Laplace approximation. The MAP is obtained using the <strong>Pólya-gamma data-augmentation</strong>, ensuring a monotonic procedure. Refer to the <a href="../slides/un_D2.pdf"><strong>slides of unit D.2</strong></a> for further details.</p>
+<div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>logit_Laplace <span class="ot">&lt;-</span> <span class="cf">function</span>(y, X, B, b, <span class="at">tol =</span> <span class="fl">1e-16</span>, <span class="at">maxiter =</span> <span class="dv">10000</span>) {</span>
 <span id="cb5-2"><a href="#cb5-2"></a>  P <span class="ot">&lt;-</span> <span class="fu">solve</span>(B) <span class="co"># Prior precision matrix</span></span>
 <span id="cb5-3"><a href="#cb5-3"></a>  Pb <span class="ot">&lt;-</span> P <span class="sc">%*%</span> b <span class="co"># Term appearing in the Gibbs sampling</span></span>
@@ -246,25 +275,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-34"><a href="#cb5-34"></a>  <span class="fu">stop</span>(<span class="st">"The algorithm has not reached convergence"</span>)</span>
 <span id="cb5-35"><a href="#cb5-35"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The marginal densities of the first two regression coefficients are reported, together with the “gold standard” obtained from the MCMC samples.</p>
-<div class="cell" data-layout-align="center">
+<p>The marginal densities of the first two regression coefficients and the “gold standard” obtained from the MCMC samples are reported.</p>
+<div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">library</span>(tictoc)</span>
 <span id="cb6-2"><a href="#cb6-2"></a></span>
 <span id="cb6-3"><a href="#cb6-3"></a><span class="fu">tic</span>()</span>
 <span id="cb6-4"><a href="#cb6-4"></a>fit_Laplace <span class="ot">&lt;-</span> <span class="fu">logit_Laplace</span>(y, X, B, b)</span>
-<span id="cb6-5"><a href="#cb6-5"></a><span class="fu">toc</span>()</span>
-<span id="cb6-6"><a href="#cb6-6"></a><span class="do">## 0.023 sec elapsed</span></span>
-<span id="cb6-7"><a href="#cb6-7"></a></span>
-<span id="cb6-8"><a href="#cb6-8"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
-<span id="cb6-9"><a href="#cb6-9"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">1</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">1</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>)</span>
-<span id="cb6-10"><a href="#cb6-10"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_Laplace<span class="sc">$</span>mu[<span class="dv">1</span>], <span class="fu">sqrt</span>(fit_Laplace<span class="sc">$</span>Sigma[<span class="dv">1</span>, <span class="dv">1</span>])), <span class="at">add =</span> T)</span>
-<span id="cb6-11"><a href="#cb6-11"></a></span>
-<span id="cb6-12"><a href="#cb6-12"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">2</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">2</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>)</span>
-<span id="cb6-13"><a href="#cb6-13"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_Laplace<span class="sc">$</span>mu[<span class="dv">2</span>], <span class="fu">sqrt</span>(fit_Laplace<span class="sc">$</span>Sigma[<span class="dv">2</span>, <span class="dv">2</span>])), <span class="at">add =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="fu">toc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>0.015 sec elapsed</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">1</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">1</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>)</span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_Laplace<span class="sc">$</span>mu[<span class="dv">1</span>], <span class="fu">sqrt</span>(fit_Laplace<span class="sc">$</span>Sigma[<span class="dv">1</span>, <span class="dv">1</span>])), <span class="at">add =</span> T)</span>
+<span id="cb8-4"><a href="#cb8-4"></a></span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">2</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">2</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>)</span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_Laplace<span class="sc">$</span>mu[<span class="dv">2</span>], <span class="fu">sqrt</span>(fit_Laplace<span class="sc">$</span>Sigma[<span class="dv">2</span>, <span class="dv">2</span>])), <span class="at">add =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
+<div>
 <figure class="figure">
-<p><img src="un_D2_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="1600"></p>
+<p><img src="un_D2_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="2000"></p>
 </figure>
 </div>
 </div>
@@ -273,79 +303,80 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="variational-bayes" class="level2">
 <h2 class="anchored" data-anchor-id="variational-bayes">Variational Bayes</h2>
 <p>The second approximation is the Variational Bayes approximation of <a href="https://link.springer.com/article/10.1023/A:1008932416310"><strong>Jaakkola and Jordan (2000)</strong></a> and later considered also by <a href="https://projecteuclid.org/euclid.ss/1570780980"><strong>Durante and Rigon (2019)</strong></a>.</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co"># Compute the log-determinant of a matrix</span></span>
-<span id="cb7-2"><a href="#cb7-2"></a>ldet <span class="ot">&lt;-</span> <span class="cf">function</span>(X) {</span>
-<span id="cb7-3"><a href="#cb7-3"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.matrix</span>(X)) {</span>
-<span id="cb7-4"><a href="#cb7-4"></a>    <span class="fu">return</span>(<span class="fu">log</span>(X))</span>
-<span id="cb7-5"><a href="#cb7-5"></a>  }</span>
-<span id="cb7-6"><a href="#cb7-6"></a>  <span class="fu">determinant</span>(X, <span class="at">logarithm =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>modulus</span>
-<span id="cb7-7"><a href="#cb7-7"></a>}</span>
-<span id="cb7-8"><a href="#cb7-8"></a></span>
-<span id="cb7-9"><a href="#cb7-9"></a>logit_CAVI <span class="ot">&lt;-</span> <span class="cf">function</span>(y, X, B, b, <span class="at">tol =</span> <span class="fl">1e-16</span>, <span class="at">maxiter =</span> <span class="dv">10000</span>) {</span>
-<span id="cb7-10"><a href="#cb7-10"></a>  lowerbound <span class="ot">&lt;-</span> <span class="fu">numeric</span>(maxiter)</span>
-<span id="cb7-11"><a href="#cb7-11"></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
-<span id="cb7-12"><a href="#cb7-12"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(X)</span>
-<span id="cb7-13"><a href="#cb7-13"></a></span>
-<span id="cb7-14"><a href="#cb7-14"></a>  P <span class="ot">&lt;-</span> <span class="fu">solve</span>(B)</span>
-<span id="cb7-15"><a href="#cb7-15"></a>  Pb <span class="ot">&lt;-</span> <span class="fu">c</span>(P <span class="sc">%*%</span> b)</span>
-<span id="cb7-16"><a href="#cb7-16"></a>  Pdet <span class="ot">&lt;-</span> <span class="fu">ldet</span>(P)</span>
-<span id="cb7-17"><a href="#cb7-17"></a></span>
-<span id="cb7-18"><a href="#cb7-18"></a>  <span class="co"># Initialization for omega equal to 0.25</span></span>
-<span id="cb7-19"><a href="#cb7-19"></a>  P_vb <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(X <span class="sc">*</span> <span class="fu">rep</span>(<span class="dv">1</span> <span class="sc">/</span> <span class="dv">4</span>, n), X) <span class="sc">+</span> P</span>
-<span id="cb7-20"><a href="#cb7-20"></a>  Sigma_vb <span class="ot">&lt;-</span> <span class="fu">solve</span>(P_vb)</span>
-<span id="cb7-21"><a href="#cb7-21"></a>  mu_vb <span class="ot">&lt;-</span> Sigma_vb <span class="sc">%*%</span> (<span class="fu">crossprod</span>(X, y <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">+</span> Pb)</span>
-<span id="cb7-22"><a href="#cb7-22"></a>  eta <span class="ot">&lt;-</span> <span class="fu">c</span>(X <span class="sc">%*%</span> mu_vb)</span>
-<span id="cb7-23"><a href="#cb7-23"></a>  xi <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(eta<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="fu">rowSums</span>(X <span class="sc">%*%</span> Sigma_vb <span class="sc">*</span> X))</span>
-<span id="cb7-24"><a href="#cb7-24"></a>  omega <span class="ot">&lt;-</span> <span class="fu">tanh</span>(xi <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> xi)</span>
-<span id="cb7-25"><a href="#cb7-25"></a>  omega[<span class="fu">is.nan</span>(omega)] <span class="ot">&lt;-</span> <span class="fl">0.25</span></span>
-<span id="cb7-26"><a href="#cb7-26"></a></span>
-<span id="cb7-27"><a href="#cb7-27"></a>  lowerbound[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> p <span class="sc">+</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">ldet</span>(Sigma_vb) <span class="sc">+</span> <span class="fl">0.5</span> <span class="sc">*</span> Pdet <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">t</span>(mu_vb <span class="sc">-</span> b) <span class="sc">%*%</span> P <span class="sc">%*%</span> (mu_vb <span class="sc">-</span> b) <span class="sc">+</span> <span class="fu">sum</span>((y <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">*</span> eta <span class="sc">+</span> <span class="fu">log</span>(<span class="fu">plogis</span>(xi)) <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> xi) <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">sum</span>(<span class="fu">diag</span>(P <span class="sc">%*%</span> Sigma_vb))</span>
-<span id="cb7-28"><a href="#cb7-28"></a></span>
-<span id="cb7-29"><a href="#cb7-29"></a>  <span class="co"># Iterative procedure</span></span>
-<span id="cb7-30"><a href="#cb7-30"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>maxiter) {</span>
-<span id="cb7-31"><a href="#cb7-31"></a>    P_vb <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(X <span class="sc">*</span> omega, X) <span class="sc">+</span> P</span>
-<span id="cb7-32"><a href="#cb7-32"></a>    Sigma_vb <span class="ot">&lt;-</span> <span class="fu">solve</span>(P_vb)</span>
-<span id="cb7-33"><a href="#cb7-33"></a>    mu_vb <span class="ot">&lt;-</span> Sigma_vb <span class="sc">%*%</span> (<span class="fu">crossprod</span>(X, y <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">+</span> Pb)</span>
-<span id="cb7-34"><a href="#cb7-34"></a></span>
-<span id="cb7-35"><a href="#cb7-35"></a>    <span class="co"># Update of xi</span></span>
-<span id="cb7-36"><a href="#cb7-36"></a>    eta <span class="ot">&lt;-</span> <span class="fu">c</span>(X <span class="sc">%*%</span> mu_vb)</span>
-<span id="cb7-37"><a href="#cb7-37"></a>    xi <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(eta<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="fu">rowSums</span>(X <span class="sc">%*%</span> Sigma_vb <span class="sc">*</span> X))</span>
-<span id="cb7-38"><a href="#cb7-38"></a>    omega <span class="ot">&lt;-</span> <span class="fu">tanh</span>(xi <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> xi)</span>
-<span id="cb7-39"><a href="#cb7-39"></a>    omega[<span class="fu">is.nan</span>(omega)] <span class="ot">&lt;-</span> <span class="fl">0.25</span></span>
-<span id="cb7-40"><a href="#cb7-40"></a></span>
-<span id="cb7-41"><a href="#cb7-41"></a>    lowerbound[t] <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> p <span class="sc">+</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">ldet</span>(Sigma_vb) <span class="sc">+</span> <span class="fl">0.5</span> <span class="sc">*</span> Pdet <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">t</span>(mu_vb <span class="sc">-</span> b) <span class="sc">%*%</span> P <span class="sc">%*%</span> (mu_vb <span class="sc">-</span> b) <span class="sc">+</span> <span class="fu">sum</span>((y <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">*</span> eta <span class="sc">+</span> <span class="fu">log</span>(<span class="fu">plogis</span>(xi)) <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> xi) <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">sum</span>(<span class="fu">diag</span>(P <span class="sc">%*%</span> Sigma_vb))</span>
-<span id="cb7-42"><a href="#cb7-42"></a></span>
-<span id="cb7-43"><a href="#cb7-43"></a>    <span class="cf">if</span> (<span class="fu">abs</span>(lowerbound[t] <span class="sc">-</span> lowerbound[t <span class="sc">-</span> <span class="dv">1</span>]) <span class="sc">&lt;</span> tol) {</span>
-<span id="cb7-44"><a href="#cb7-44"></a>      <span class="fu">return</span>(<span class="fu">list</span>(</span>
-<span id="cb7-45"><a href="#cb7-45"></a>        <span class="at">mu =</span> <span class="fu">c</span>(mu_vb), <span class="at">Sigma =</span> <span class="fu">matrix</span>(Sigma_vb, p, p),</span>
-<span id="cb7-46"><a href="#cb7-46"></a>        <span class="at">Convergence =</span> <span class="fu">cbind</span>(</span>
-<span id="cb7-47"><a href="#cb7-47"></a>          <span class="at">Iteration =</span> (<span class="dv">1</span><span class="sc">:</span>t) <span class="sc">-</span> <span class="dv">1</span>,</span>
-<span id="cb7-48"><a href="#cb7-48"></a>          <span class="at">Lowerbound =</span> lowerbound[<span class="dv">1</span><span class="sc">:</span>t]</span>
-<span id="cb7-49"><a href="#cb7-49"></a>        ), <span class="at">xi =</span> xi</span>
-<span id="cb7-50"><a href="#cb7-50"></a>      ))</span>
-<span id="cb7-51"><a href="#cb7-51"></a>    }</span>
-<span id="cb7-52"><a href="#cb7-52"></a>  }</span>
-<span id="cb7-53"><a href="#cb7-53"></a>  <span class="fu">stop</span>(<span class="st">"The algorithm has not reached convergence"</span>)</span>
-<span id="cb7-54"><a href="#cb7-54"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># Compute the log-determinant of a matrix</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>ldet <span class="ot">&lt;-</span> <span class="cf">function</span>(X) {</span>
+<span id="cb9-3"><a href="#cb9-3"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.matrix</span>(X)) {</span>
+<span id="cb9-4"><a href="#cb9-4"></a>    <span class="fu">return</span>(<span class="fu">log</span>(X))</span>
+<span id="cb9-5"><a href="#cb9-5"></a>  }</span>
+<span id="cb9-6"><a href="#cb9-6"></a>  <span class="fu">determinant</span>(X, <span class="at">logarithm =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>modulus</span>
+<span id="cb9-7"><a href="#cb9-7"></a>}</span>
+<span id="cb9-8"><a href="#cb9-8"></a></span>
+<span id="cb9-9"><a href="#cb9-9"></a>logit_CAVI <span class="ot">&lt;-</span> <span class="cf">function</span>(y, X, B, b, <span class="at">tol =</span> <span class="fl">1e-16</span>, <span class="at">maxiter =</span> <span class="dv">10000</span>) {</span>
+<span id="cb9-10"><a href="#cb9-10"></a>  lowerbound <span class="ot">&lt;-</span> <span class="fu">numeric</span>(maxiter)</span>
+<span id="cb9-11"><a href="#cb9-11"></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
+<span id="cb9-12"><a href="#cb9-12"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(X)</span>
+<span id="cb9-13"><a href="#cb9-13"></a></span>
+<span id="cb9-14"><a href="#cb9-14"></a>  P <span class="ot">&lt;-</span> <span class="fu">solve</span>(B)</span>
+<span id="cb9-15"><a href="#cb9-15"></a>  Pb <span class="ot">&lt;-</span> <span class="fu">c</span>(P <span class="sc">%*%</span> b)</span>
+<span id="cb9-16"><a href="#cb9-16"></a>  Pdet <span class="ot">&lt;-</span> <span class="fu">ldet</span>(P)</span>
+<span id="cb9-17"><a href="#cb9-17"></a></span>
+<span id="cb9-18"><a href="#cb9-18"></a>  <span class="co"># Initialization for omega equal to 0.25</span></span>
+<span id="cb9-19"><a href="#cb9-19"></a>  P_vb <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(X <span class="sc">*</span> <span class="fu">rep</span>(<span class="dv">1</span> <span class="sc">/</span> <span class="dv">4</span>, n), X) <span class="sc">+</span> P</span>
+<span id="cb9-20"><a href="#cb9-20"></a>  Sigma_vb <span class="ot">&lt;-</span> <span class="fu">solve</span>(P_vb)</span>
+<span id="cb9-21"><a href="#cb9-21"></a>  mu_vb <span class="ot">&lt;-</span> Sigma_vb <span class="sc">%*%</span> (<span class="fu">crossprod</span>(X, y <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">+</span> Pb)</span>
+<span id="cb9-22"><a href="#cb9-22"></a>  eta <span class="ot">&lt;-</span> <span class="fu">c</span>(X <span class="sc">%*%</span> mu_vb)</span>
+<span id="cb9-23"><a href="#cb9-23"></a>  xi <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(eta<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="fu">rowSums</span>(X <span class="sc">%*%</span> Sigma_vb <span class="sc">*</span> X))</span>
+<span id="cb9-24"><a href="#cb9-24"></a>  omega <span class="ot">&lt;-</span> <span class="fu">tanh</span>(xi <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> xi)</span>
+<span id="cb9-25"><a href="#cb9-25"></a>  omega[<span class="fu">is.nan</span>(omega)] <span class="ot">&lt;-</span> <span class="fl">0.25</span></span>
+<span id="cb9-26"><a href="#cb9-26"></a></span>
+<span id="cb9-27"><a href="#cb9-27"></a>  lowerbound[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> p <span class="sc">+</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">ldet</span>(Sigma_vb) <span class="sc">+</span> <span class="fl">0.5</span> <span class="sc">*</span> Pdet <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">t</span>(mu_vb <span class="sc">-</span> b) <span class="sc">%*%</span> P <span class="sc">%*%</span> (mu_vb <span class="sc">-</span> b) <span class="sc">+</span> <span class="fu">sum</span>((y <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">*</span> eta <span class="sc">+</span> <span class="fu">log</span>(<span class="fu">plogis</span>(xi)) <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> xi) <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">sum</span>(<span class="fu">diag</span>(P <span class="sc">%*%</span> Sigma_vb))</span>
+<span id="cb9-28"><a href="#cb9-28"></a></span>
+<span id="cb9-29"><a href="#cb9-29"></a>  <span class="co"># Iterative procedure</span></span>
+<span id="cb9-30"><a href="#cb9-30"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>maxiter) {</span>
+<span id="cb9-31"><a href="#cb9-31"></a>    P_vb <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(X <span class="sc">*</span> omega, X) <span class="sc">+</span> P</span>
+<span id="cb9-32"><a href="#cb9-32"></a>    Sigma_vb <span class="ot">&lt;-</span> <span class="fu">solve</span>(P_vb)</span>
+<span id="cb9-33"><a href="#cb9-33"></a>    mu_vb <span class="ot">&lt;-</span> Sigma_vb <span class="sc">%*%</span> (<span class="fu">crossprod</span>(X, y <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">+</span> Pb)</span>
+<span id="cb9-34"><a href="#cb9-34"></a></span>
+<span id="cb9-35"><a href="#cb9-35"></a>    <span class="co"># Update of xi</span></span>
+<span id="cb9-36"><a href="#cb9-36"></a>    eta <span class="ot">&lt;-</span> <span class="fu">c</span>(X <span class="sc">%*%</span> mu_vb)</span>
+<span id="cb9-37"><a href="#cb9-37"></a>    xi <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(eta<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="fu">rowSums</span>(X <span class="sc">%*%</span> Sigma_vb <span class="sc">*</span> X))</span>
+<span id="cb9-38"><a href="#cb9-38"></a>    omega <span class="ot">&lt;-</span> <span class="fu">tanh</span>(xi <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> xi)</span>
+<span id="cb9-39"><a href="#cb9-39"></a>    omega[<span class="fu">is.nan</span>(omega)] <span class="ot">&lt;-</span> <span class="fl">0.25</span></span>
+<span id="cb9-40"><a href="#cb9-40"></a></span>
+<span id="cb9-41"><a href="#cb9-41"></a>    lowerbound[t] <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> p <span class="sc">+</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">ldet</span>(Sigma_vb) <span class="sc">+</span> <span class="fl">0.5</span> <span class="sc">*</span> Pdet <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">t</span>(mu_vb <span class="sc">-</span> b) <span class="sc">%*%</span> P <span class="sc">%*%</span> (mu_vb <span class="sc">-</span> b) <span class="sc">+</span> <span class="fu">sum</span>((y <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">*</span> eta <span class="sc">+</span> <span class="fu">log</span>(<span class="fu">plogis</span>(xi)) <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> xi) <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">sum</span>(<span class="fu">diag</span>(P <span class="sc">%*%</span> Sigma_vb))</span>
+<span id="cb9-42"><a href="#cb9-42"></a></span>
+<span id="cb9-43"><a href="#cb9-43"></a>    <span class="cf">if</span> (<span class="fu">abs</span>(lowerbound[t] <span class="sc">-</span> lowerbound[t <span class="sc">-</span> <span class="dv">1</span>]) <span class="sc">&lt;</span> tol) {</span>
+<span id="cb9-44"><a href="#cb9-44"></a>      <span class="fu">return</span>(<span class="fu">list</span>(</span>
+<span id="cb9-45"><a href="#cb9-45"></a>        <span class="at">mu =</span> <span class="fu">c</span>(mu_vb), <span class="at">Sigma =</span> <span class="fu">matrix</span>(Sigma_vb, p, p),</span>
+<span id="cb9-46"><a href="#cb9-46"></a>        <span class="at">Convergence =</span> <span class="fu">cbind</span>(</span>
+<span id="cb9-47"><a href="#cb9-47"></a>          <span class="at">Iteration =</span> (<span class="dv">1</span><span class="sc">:</span>t) <span class="sc">-</span> <span class="dv">1</span>,</span>
+<span id="cb9-48"><a href="#cb9-48"></a>          <span class="at">Lowerbound =</span> lowerbound[<span class="dv">1</span><span class="sc">:</span>t]</span>
+<span id="cb9-49"><a href="#cb9-49"></a>        ), <span class="at">xi =</span> xi</span>
+<span id="cb9-50"><a href="#cb9-50"></a>      ))</span>
+<span id="cb9-51"><a href="#cb9-51"></a>    }</span>
+<span id="cb9-52"><a href="#cb9-52"></a>  }</span>
+<span id="cb9-53"><a href="#cb9-53"></a>  <span class="fu">stop</span>(<span class="st">"The algorithm has not reached convergence"</span>)</span>
+<span id="cb9-54"><a href="#cb9-54"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The marginal densities of the first two regression coefficients are reported, together with the “gold standard” obtained from the MCMC samples.</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">tic</span>()</span>
-<span id="cb8-2"><a href="#cb8-2"></a>fit_CAVI <span class="ot">&lt;-</span> <span class="fu">logit_CAVI</span>(y, X, B, b)</span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="fu">toc</span>()</span>
-<span id="cb8-4"><a href="#cb8-4"></a><span class="do">## 0.027 sec elapsed</span></span>
-<span id="cb8-5"><a href="#cb8-5"></a></span>
-<span id="cb8-6"><a href="#cb8-6"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
-<span id="cb8-7"><a href="#cb8-7"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">1</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">1</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.6</span>))</span>
-<span id="cb8-8"><a href="#cb8-8"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_CAVI<span class="sc">$</span>mu[<span class="dv">1</span>], <span class="fu">sqrt</span>(fit_CAVI<span class="sc">$</span>Sigma[<span class="dv">1</span>, <span class="dv">1</span>])), <span class="at">add =</span> T)</span>
-<span id="cb8-9"><a href="#cb8-9"></a></span>
-<span id="cb8-10"><a href="#cb8-10"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">2</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">2</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>))</span>
-<span id="cb8-11"><a href="#cb8-11"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_CAVI<span class="sc">$</span>mu[<span class="dv">2</span>], <span class="fu">sqrt</span>(fit_CAVI<span class="sc">$</span>Sigma[<span class="dv">2</span>, <span class="dv">2</span>])), <span class="at">add =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The marginal densities of the first two regression coefficients and the “gold standard” obtained from the MCMC samples are reported.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="fu">tic</span>()</span>
+<span id="cb10-2"><a href="#cb10-2"></a>fit_CAVI <span class="ot">&lt;-</span> <span class="fu">logit_CAVI</span>(y, X, B, b)</span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="fu">toc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>0.027 sec elapsed</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">1</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">1</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.6</span>))</span>
+<span id="cb12-3"><a href="#cb12-3"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_CAVI<span class="sc">$</span>mu[<span class="dv">1</span>], <span class="fu">sqrt</span>(fit_CAVI<span class="sc">$</span>Sigma[<span class="dv">1</span>, <span class="dv">1</span>])), <span class="at">add =</span> T)</span>
+<span id="cb12-4"><a href="#cb12-4"></a></span>
+<span id="cb12-5"><a href="#cb12-5"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">2</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">2</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>))</span>
+<span id="cb12-6"><a href="#cb12-6"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_CAVI<span class="sc">$</span>mu[<span class="dv">2</span>], <span class="fu">sqrt</span>(fit_CAVI<span class="sc">$</span>Sigma[<span class="dv">2</span>, <span class="dv">2</span>])), <span class="at">add =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
+<div>
 <figure class="figure">
-<p><img src="un_D2_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="1600"></p>
+<p><img src="un_D2_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="2000"></p>
 </figure>
 </div>
 </div>
@@ -353,29 +384,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="hybrid-laplace" class="level2">
 <h2 class="anchored" data-anchor-id="hybrid-laplace">Hybrid Laplace</h2>
-<p>THe fourth approach is based on the variational Bayes approximation mean estimate which is plugged-in into the Fisher information matrix. This procedure is described in the <a href="../slides/un_D2.pdf"><strong>slides of unit D.2</strong></a>.</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>logit_HL <span class="ot">&lt;-</span> <span class="cf">function</span>(y, X, B, b, <span class="at">tol =</span> <span class="fl">1e-16</span>, <span class="at">maxiter =</span> <span class="dv">10000</span>) {</span>
-<span id="cb9-2"><a href="#cb9-2"></a>  fit_HL <span class="ot">&lt;-</span> <span class="fu">logit_CAVI</span>(y, X, B, b, tol, maxiter)</span>
-<span id="cb9-3"><a href="#cb9-3"></a>  prob <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">plogis</span>(X <span class="sc">%*%</span> fit_CAVI<span class="sc">$</span>mu))</span>
-<span id="cb9-4"><a href="#cb9-4"></a>  fit_HL<span class="sc">$</span>Sigma <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(X <span class="sc">*</span> prob <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prob), X) <span class="sc">+</span> <span class="fu">solve</span>(B))</span>
-<span id="cb9-5"><a href="#cb9-5"></a>  fit_HL</span>
-<span id="cb9-6"><a href="#cb9-6"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The fourth approach is based on the variational Bayes approximation mean estimate plugged into the Fisher information matrix. This procedure is <strong>not</strong> described in the slides of unit D.2.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>logit_HL <span class="ot">&lt;-</span> <span class="cf">function</span>(y, X, B, b, <span class="at">tol =</span> <span class="fl">1e-16</span>, <span class="at">maxiter =</span> <span class="dv">10000</span>) {</span>
+<span id="cb13-2"><a href="#cb13-2"></a>  fit_HL <span class="ot">&lt;-</span> <span class="fu">logit_CAVI</span>(y, X, B, b, tol, maxiter)</span>
+<span id="cb13-3"><a href="#cb13-3"></a>  prob <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">plogis</span>(X <span class="sc">%*%</span> fit_CAVI<span class="sc">$</span>mu))</span>
+<span id="cb13-4"><a href="#cb13-4"></a>  fit_HL<span class="sc">$</span>Sigma <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(X <span class="sc">*</span> prob <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prob), X) <span class="sc">+</span> <span class="fu">solve</span>(B))</span>
+<span id="cb13-5"><a href="#cb13-5"></a>  fit_HL</span>
+<span id="cb13-6"><a href="#cb13-6"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The marginal densities of the first two regression coefficients are reported, together with the “gold standard” obtained from the MCMC samples.</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>fit_HL <span class="ot">&lt;-</span> <span class="fu">logit_HL</span>(y, X, B, b)</span>
-<span id="cb10-2"><a href="#cb10-2"></a></span>
-<span id="cb10-3"><a href="#cb10-3"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
-<span id="cb10-4"><a href="#cb10-4"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">1</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">1</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>)</span>
-<span id="cb10-5"><a href="#cb10-5"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_HL<span class="sc">$</span>mu[<span class="dv">1</span>], <span class="fu">sqrt</span>(fit_HL<span class="sc">$</span>Sigma[<span class="dv">1</span>, <span class="dv">1</span>])), <span class="at">add =</span> T)</span>
-<span id="cb10-6"><a href="#cb10-6"></a></span>
-<span id="cb10-7"><a href="#cb10-7"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">2</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">2</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>)</span>
-<span id="cb10-8"><a href="#cb10-8"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_HL<span class="sc">$</span>mu[<span class="dv">2</span>], <span class="fu">sqrt</span>(fit_HL<span class="sc">$</span>Sigma[<span class="dv">2</span>, <span class="dv">2</span>])), <span class="at">add =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The marginal densities of the first two regression coefficients and the “gold standard” obtained from the MCMC samples are reported.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>fit_HL <span class="ot">&lt;-</span> <span class="fu">logit_HL</span>(y, X, B, b)</span>
+<span id="cb14-2"><a href="#cb14-2"></a></span>
+<span id="cb14-3"><a href="#cb14-3"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb14-4"><a href="#cb14-4"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">1</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">1</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>)</span>
+<span id="cb14-5"><a href="#cb14-5"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_HL<span class="sc">$</span>mu[<span class="dv">1</span>], <span class="fu">sqrt</span>(fit_HL<span class="sc">$</span>Sigma[<span class="dv">1</span>, <span class="dv">1</span>])), <span class="at">add =</span> T)</span>
+<span id="cb14-6"><a href="#cb14-6"></a></span>
+<span id="cb14-7"><a href="#cb14-7"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">2</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">2</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>)</span>
+<span id="cb14-8"><a href="#cb14-8"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, fit_HL<span class="sc">$</span>mu[<span class="dv">2</span>], <span class="fu">sqrt</span>(fit_HL<span class="sc">$</span>Sigma[<span class="dv">2</span>, <span class="dv">2</span>])), <span class="at">add =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
+<div>
 <figure class="figure">
-<p><img src="un_D2_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="1600"></p>
+<p><img src="un_D2_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="2000"></p>
 </figure>
 </div>
 </div>
@@ -383,20 +414,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="further-comparisons" class="level2">
 <h2 class="anchored" data-anchor-id="further-comparisons">Further comparisons</h2>
-<p>In the following, we report the posterior means and variances under the all the previous approximations together with the gold standard MCMC values.</p>
+<p>We report the posterior means and variances under all the previous approximations and the gold standard MCMC values in the following.</p>
 <section id="mean-and-variances" class="level3">
 <h3 class="anchored" data-anchor-id="mean-and-variances">Mean and variances</h3>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>mu_MCMC <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(fit_MCMC)</span>
-<span id="cb11-2"><a href="#cb11-2"></a>Sigma_MCMC <span class="ot">&lt;-</span> <span class="fu">var</span>(fit_MCMC)</span>
-<span id="cb11-3"><a href="#cb11-3"></a></span>
-<span id="cb11-4"><a href="#cb11-4"></a>Means <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb11-5"><a href="#cb11-5"></a>  <span class="at">MCMC =</span> mu_MCMC,</span>
-<span id="cb11-6"><a href="#cb11-6"></a>  <span class="at">Laplace =</span> fit_Laplace<span class="sc">$</span>mu,</span>
-<span id="cb11-7"><a href="#cb11-7"></a>  <span class="at">VB =</span> fit_CAVI<span class="sc">$</span>mu,</span>
-<span id="cb11-8"><a href="#cb11-8"></a>  <span class="at">HL =</span> fit_HL<span class="sc">$</span>mu</span>
-<span id="cb11-9"><a href="#cb11-9"></a>)</span>
-<span id="cb11-10"><a href="#cb11-10"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(Means, <span class="at">digits =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>mu_MCMC <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(fit_MCMC)</span>
+<span id="cb15-2"><a href="#cb15-2"></a>Sigma_MCMC <span class="ot">&lt;-</span> <span class="fu">var</span>(fit_MCMC)</span>
+<span id="cb15-3"><a href="#cb15-3"></a></span>
+<span id="cb15-4"><a href="#cb15-4"></a>Means <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb15-5"><a href="#cb15-5"></a>  <span class="at">MCMC =</span> mu_MCMC,</span>
+<span id="cb15-6"><a href="#cb15-6"></a>  <span class="at">Laplace =</span> fit_Laplace<span class="sc">$</span>mu,</span>
+<span id="cb15-7"><a href="#cb15-7"></a>  <span class="at">VB =</span> fit_CAVI<span class="sc">$</span>mu,</span>
+<span id="cb15-8"><a href="#cb15-8"></a>  <span class="at">HL =</span> fit_HL<span class="sc">$</span>mu</span>
+<span id="cb15-9"><a href="#cb15-9"></a>)</span>
+<span id="cb15-10"><a href="#cb15-10"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(Means, <span class="at">digits =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <thead>
@@ -409,13 +440,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: right;">-8.8879</td>
+<td style="text-align: right;">-8.8827</td>
 <td style="text-align: right;">-8.7249</td>
 <td style="text-align: right;">-8.7894</td>
 <td style="text-align: right;">-8.7894</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">0.1230</td>
+<td style="text-align: right;">0.1229</td>
 <td style="text-align: right;">0.1207</td>
 <td style="text-align: right;">0.1215</td>
 <td style="text-align: right;">0.1215</td>
@@ -427,7 +458,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">0.0341</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">-0.0113</td>
+<td style="text-align: right;">-0.0114</td>
 <td style="text-align: right;">-0.0110</td>
 <td style="text-align: right;">-0.0111</td>
 <td style="text-align: right;">-0.0111</td>
@@ -445,7 +476,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">0.0745</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">1.2411</td>
+<td style="text-align: right;">1.2425</td>
 <td style="text-align: right;">1.2159</td>
 <td style="text-align: right;">1.2282</td>
 <td style="text-align: right;">1.2282</td>
@@ -460,14 +491,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </div>
 </div>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>Sd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb12-2"><a href="#cb12-2"></a>  <span class="at">MCMC =</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">var</span>(fit_MCMC))),</span>
-<span id="cb12-3"><a href="#cb12-3"></a>  <span class="at">Laplace =</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(fit_Laplace<span class="sc">$</span>Sigma)),</span>
-<span id="cb12-4"><a href="#cb12-4"></a>  <span class="at">VB =</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(fit_CAVI<span class="sc">$</span>Sigma)),</span>
-<span id="cb12-5"><a href="#cb12-5"></a>  <span class="at">HL =</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(fit_HL<span class="sc">$</span>Sigma))</span>
-<span id="cb12-6"><a href="#cb12-6"></a>)</span>
-<span id="cb12-7"><a href="#cb12-7"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(Sd, <span class="at">digits =</span> <span class="dv">4</span>, <span class="at">row.names =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>Sd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb16-2"><a href="#cb16-2"></a>  <span class="at">MCMC =</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">var</span>(fit_MCMC))),</span>
+<span id="cb16-3"><a href="#cb16-3"></a>  <span class="at">Laplace =</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(fit_Laplace<span class="sc">$</span>Sigma)),</span>
+<span id="cb16-4"><a href="#cb16-4"></a>  <span class="at">VB =</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(fit_CAVI<span class="sc">$</span>Sigma)),</span>
+<span id="cb16-5"><a href="#cb16-5"></a>  <span class="at">HL =</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(fit_HL<span class="sc">$</span>Sigma))</span>
+<span id="cb16-6"><a href="#cb16-6"></a>)</span>
+<span id="cb16-7"><a href="#cb16-7"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(Sd, <span class="at">digits =</span> <span class="dv">4</span>, <span class="at">row.names =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <thead>
@@ -480,13 +511,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: right;">0.9199</td>
+<td style="text-align: right;">0.9151</td>
 <td style="text-align: right;">0.9049</td>
 <td style="text-align: right;">0.6979</td>
 <td style="text-align: right;">0.9086</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">0.0434</td>
+<td style="text-align: right;">0.0435</td>
 <td style="text-align: right;">0.0430</td>
 <td style="text-align: right;">0.0374</td>
 <td style="text-align: right;">0.0431</td>
@@ -504,25 +535,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">0.0101</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">0.0146</td>
+<td style="text-align: right;">0.0145</td>
 <td style="text-align: right;">0.0145</td>
 <td style="text-align: right;">0.0122</td>
 <td style="text-align: right;">0.0145</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">0.0228</td>
+<td style="text-align: right;">0.0229</td>
 <td style="text-align: right;">0.0225</td>
 <td style="text-align: right;">0.0191</td>
 <td style="text-align: right;">0.0226</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">0.3574</td>
+<td style="text-align: right;">0.3556</td>
 <td style="text-align: right;">0.3522</td>
 <td style="text-align: right;">0.2904</td>
 <td style="text-align: right;">0.3533</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">0.0139</td>
+<td style="text-align: right;">0.0140</td>
 <td style="text-align: right;">0.0138</td>
 <td style="text-align: right;">0.0122</td>
 <td style="text-align: right;">0.0138</td>
@@ -534,34 +565,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="discrepancy-from-the-optimal-gaussian" class="level3">
 <h3 class="anchored" data-anchor-id="discrepancy-from-the-optimal-gaussian">Discrepancy from the optimal Gaussian</h3>
-<p>In the last table, we comput the Kullback-Leibler divergence between the obtained Gaussian approximations and the “optimal” Gaussian distribution, which is the one matching the correct posterior mean and variance. These quantities are approximated using MCMC.</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>KL_gauss <span class="ot">&lt;-</span> <span class="cf">function</span>(mu1, Sigma1, mu2, Sigma2) {</span>
-<span id="cb13-2"><a href="#cb13-2"></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(Sigma1)</span>
-<span id="cb13-3"><a href="#cb13-3"></a>  <span class="fu">c</span>(<span class="fl">0.5</span> <span class="sc">*</span> (<span class="fu">ldet</span>(Sigma2) <span class="sc">-</span> <span class="fu">ldet</span>(Sigma1) <span class="sc">-</span> p <span class="sc">+</span> <span class="fu">sum</span>(<span class="fu">diag</span>(<span class="fu">solve</span>(Sigma2) <span class="sc">%*%</span> Sigma1)) <span class="sc">+</span> <span class="fu">t</span>(mu2 <span class="sc">-</span> mu1) <span class="sc">%*%</span> <span class="fu">solve</span>(Sigma2) <span class="sc">%*%</span> (mu2 <span class="sc">-</span> mu1)))</span>
-<span id="cb13-4"><a href="#cb13-4"></a>}</span>
-<span id="cb13-5"><a href="#cb13-5"></a></span>
-<span id="cb13-6"><a href="#cb13-6"></a><span class="fu">library</span>(expm)</span>
-<span id="cb13-7"><a href="#cb13-7"></a>dWass_gauss <span class="ot">&lt;-</span> <span class="cf">function</span>(mu1, Sigma1, mu2, Sigma2) {</span>
-<span id="cb13-8"><a href="#cb13-8"></a>  Sigma2_r <span class="ot">&lt;-</span> <span class="fu">sqrtm</span>(Sigma2)</span>
-<span id="cb13-9"><a href="#cb13-9"></a>  <span class="fu">c</span>(<span class="fu">crossprod</span>(mu2 <span class="sc">-</span> mu1) <span class="sc">+</span> <span class="fu">sum</span>(<span class="fu">diag</span>(Sigma1 <span class="sc">+</span> Sigma2 <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">sqrtm</span>(Sigma2_r <span class="sc">%*%</span> Sigma1 <span class="sc">%*%</span> Sigma2_r))))</span>
-<span id="cb13-10"><a href="#cb13-10"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In the last table, we compute the Kullback-Leibler divergence between the obtained Gaussian approximations and the “optimal” Gaussian distribution, which matches the correct posterior mean and variance. These quantities are approximated using MCMC.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>KL_gauss <span class="ot">&lt;-</span> <span class="cf">function</span>(mu1, Sigma1, mu2, Sigma2) {</span>
+<span id="cb17-2"><a href="#cb17-2"></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(Sigma1)</span>
+<span id="cb17-3"><a href="#cb17-3"></a>  <span class="fu">c</span>(<span class="fl">0.5</span> <span class="sc">*</span> (<span class="fu">ldet</span>(Sigma2) <span class="sc">-</span> <span class="fu">ldet</span>(Sigma1) <span class="sc">-</span> p <span class="sc">+</span> <span class="fu">sum</span>(<span class="fu">diag</span>(<span class="fu">solve</span>(Sigma2) <span class="sc">%*%</span> Sigma1)) <span class="sc">+</span> <span class="fu">t</span>(mu2 <span class="sc">-</span> mu1) <span class="sc">%*%</span> <span class="fu">solve</span>(Sigma2) <span class="sc">%*%</span> (mu2 <span class="sc">-</span> mu1)))</span>
+<span id="cb17-4"><a href="#cb17-4"></a>}</span>
+<span id="cb17-5"><a href="#cb17-5"></a></span>
+<span id="cb17-6"><a href="#cb17-6"></a><span class="fu">library</span>(expm)</span>
+<span id="cb17-7"><a href="#cb17-7"></a>dWass_gauss <span class="ot">&lt;-</span> <span class="cf">function</span>(mu1, Sigma1, mu2, Sigma2) {</span>
+<span id="cb17-8"><a href="#cb17-8"></a>  Sigma2_r <span class="ot">&lt;-</span> <span class="fu">sqrtm</span>(Sigma2)</span>
+<span id="cb17-9"><a href="#cb17-9"></a>  <span class="fu">c</span>(<span class="fu">crossprod</span>(mu2 <span class="sc">-</span> mu1) <span class="sc">+</span> <span class="fu">sum</span>(<span class="fu">diag</span>(Sigma1 <span class="sc">+</span> Sigma2 <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">sqrtm</span>(Sigma2_r <span class="sc">%*%</span> Sigma1 <span class="sc">%*%</span> Sigma2_r))))</span>
+<span id="cb17-10"><a href="#cb17-10"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>tab <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb14-2"><a href="#cb14-2"></a>  <span class="at">Type =</span> <span class="fu">c</span>(<span class="st">"Laplace"</span>, <span class="st">"Variational Bayes"</span>, <span class="st">"Hybrid Laplace"</span>),</span>
-<span id="cb14-3"><a href="#cb14-3"></a>  <span class="at">KL =</span> <span class="fu">c</span>(</span>
-<span id="cb14-4"><a href="#cb14-4"></a>    <span class="fu">KL_gauss</span>(fit_Laplace<span class="sc">$</span>mu, fit_Laplace<span class="sc">$</span>Sigma, mu_MCMC, Sigma_MCMC),</span>
-<span id="cb14-5"><a href="#cb14-5"></a>    <span class="fu">KL_gauss</span>(fit_CAVI<span class="sc">$</span>mu, fit_CAVI<span class="sc">$</span>Sigma, mu_MCMC, Sigma_MCMC),</span>
-<span id="cb14-6"><a href="#cb14-6"></a>    <span class="fu">KL_gauss</span>(fit_HL<span class="sc">$</span>mu, fit_HL<span class="sc">$</span>Sigma, mu_MCMC, Sigma_MCMC)</span>
-<span id="cb14-7"><a href="#cb14-7"></a>  ),</span>
-<span id="cb14-8"><a href="#cb14-8"></a>  <span class="at">Wasserstein =</span> <span class="fu">c</span>(</span>
-<span id="cb14-9"><a href="#cb14-9"></a>    <span class="fu">dWass_gauss</span>(mu_MCMC, Sigma_MCMC, fit_Laplace<span class="sc">$</span>mu, fit_Laplace<span class="sc">$</span>Sigma),</span>
-<span id="cb14-10"><a href="#cb14-10"></a>    <span class="fu">dWass_gauss</span>(mu_MCMC, Sigma_MCMC, fit_CAVI<span class="sc">$</span>mu, fit_CAVI<span class="sc">$</span>Sigma),</span>
-<span id="cb14-11"><a href="#cb14-11"></a>    <span class="fu">dWass_gauss</span>(mu_MCMC, Sigma_MCMC, fit_HL<span class="sc">$</span>mu, fit_HL<span class="sc">$</span>Sigma)</span>
-<span id="cb14-12"><a href="#cb14-12"></a>  )</span>
-<span id="cb14-13"><a href="#cb14-13"></a>)</span>
-<span id="cb14-14"><a href="#cb14-14"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(tab, <span class="at">digits =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>tab <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb18-2"><a href="#cb18-2"></a>  <span class="at">Type =</span> <span class="fu">c</span>(<span class="st">"Laplace"</span>, <span class="st">"Variational Bayes"</span>, <span class="st">"Hybrid Laplace"</span>),</span>
+<span id="cb18-3"><a href="#cb18-3"></a>  <span class="at">KL =</span> <span class="fu">c</span>(</span>
+<span id="cb18-4"><a href="#cb18-4"></a>    <span class="fu">KL_gauss</span>(fit_Laplace<span class="sc">$</span>mu, fit_Laplace<span class="sc">$</span>Sigma, mu_MCMC, Sigma_MCMC),</span>
+<span id="cb18-5"><a href="#cb18-5"></a>    <span class="fu">KL_gauss</span>(fit_CAVI<span class="sc">$</span>mu, fit_CAVI<span class="sc">$</span>Sigma, mu_MCMC, Sigma_MCMC),</span>
+<span id="cb18-6"><a href="#cb18-6"></a>    <span class="fu">KL_gauss</span>(fit_HL<span class="sc">$</span>mu, fit_HL<span class="sc">$</span>Sigma, mu_MCMC, Sigma_MCMC)</span>
+<span id="cb18-7"><a href="#cb18-7"></a>  ),</span>
+<span id="cb18-8"><a href="#cb18-8"></a>  <span class="at">Wasserstein =</span> <span class="fu">c</span>(</span>
+<span id="cb18-9"><a href="#cb18-9"></a>    <span class="fu">dWass_gauss</span>(mu_MCMC, Sigma_MCMC, fit_Laplace<span class="sc">$</span>mu, fit_Laplace<span class="sc">$</span>Sigma),</span>
+<span id="cb18-10"><a href="#cb18-10"></a>    <span class="fu">dWass_gauss</span>(mu_MCMC, Sigma_MCMC, fit_CAVI<span class="sc">$</span>mu, fit_CAVI<span class="sc">$</span>Sigma),</span>
+<span id="cb18-11"><a href="#cb18-11"></a>    <span class="fu">dWass_gauss</span>(mu_MCMC, Sigma_MCMC, fit_HL<span class="sc">$</span>mu, fit_HL<span class="sc">$</span>Sigma)</span>
+<span id="cb18-12"><a href="#cb18-12"></a>  )</span>
+<span id="cb18-13"><a href="#cb18-13"></a>)</span>
+<span id="cb18-14"><a href="#cb18-14"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(tab, <span class="at">digits =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <thead>
@@ -574,18 +605,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Laplace</td>
-<td style="text-align: right;">0.0290</td>
-<td style="text-align: right;">0.0275</td>
+<td style="text-align: right;">0.0288</td>
+<td style="text-align: right;">0.0257</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Variational Bayes</td>
-<td style="text-align: right;">0.2753</td>
-<td style="text-align: right;">0.0647</td>
+<td style="text-align: right;">0.2724</td>
+<td style="text-align: right;">0.0613</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Hybrid Laplace</td>
-<td style="text-align: right;">0.0110</td>
-<td style="text-align: right;">0.0100</td>
+<td style="text-align: right;">0.0108</td>
+<td style="text-align: right;">0.0090</td>
 </tr>
 </tbody>
 </table>
@@ -675,10 +706,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -688,8 +718,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -702,6 +741,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -745,6 +903,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -770,6 +929,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -830,6 +1015,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 

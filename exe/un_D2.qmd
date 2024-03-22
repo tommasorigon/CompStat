@@ -24,14 +24,10 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r startup, include = FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = T, eval = T, message = F, warning = F, error = F, comment = NA, cache = F, include = T, R.options = list(width = 100), collapse = T, dpi = 200, fig.align = "center", fig.height = 6, fig.width = 8)
-```
-
-In this unit we discuss several approximate Bayesian methods that have been presented in the [**slides of unit D.2**](../slides/un_D2.pdf). We will make use of the Pima indian dataset again, as in the previous [**Markdown document B.1**](un_B1.html) and [**Markdown document B.2**](un_B2.html). Importantly, note that in this document we will **not standardize the predictors** to make the computational problem more challenging. 
+This unit discusses several approximate Bayesian methods presented in the [**slides of unit D.2**](../slides/un_D2.pdf). We will make use of the Pima Indian dataset again, as in the previous [**Markdown document B.1**](un_B1.html) and [**Markdown document B.2**](un_B2.html). Importantly, note that in this document, we will **not standardize the predictors** to make the computational problem more challenging. 
 
 
-## The Pima indian dataset
+## The Pima Indian dataset
 
 ```{r}
 Pima <- rbind(MASS::Pima.tr, MASS::Pima.te)
@@ -49,7 +45,7 @@ b <- rep(0, ncol(X)) # Prior mean
 
 ## The gold standard: MCMC
 
-In order to assess the accuracy of the approximations, we first obtain a large number of posterior samples using the Pólya-gamma data augmentation approach. This is the same code that is reported also in the last paragraph of the [**Markdown document B.2**](un_B2.html).
+To assess the accuracy of the approximations, we first obtain a large number of posterior samples using the Pólya-gamma data augmentation approach. This is the code reported in the last paragraph of the [**Markdown document B.2**](un_B2.html).
 
 ```{r}
 library(BayesLogit)
@@ -101,7 +97,7 @@ fit_MCMC <- logit_Gibbs(R = 10^5, burn_in = 5000, y, X, B, b) # MCMC (gold stand
 
 ## Laplace approximation
 
-The first approach considered is the Laplace approximation. Note that the MAP is obtained using the **Pólya-gamma data-augmentation**, therefore ensuring a monotonic procedure. Refer to the [**slides of unit D.2**](../slides/un_D2.pdf) for further details. 
+The first approach considered is the Laplace approximation. The MAP is obtained using the **Pólya-gamma data-augmentation**, ensuring a monotonic procedure. Refer to the [**slides of unit D.2**](../slides/un_D2.pdf) for further details. 
 
 ```{r}
 logit_Laplace <- function(y, X, B, b, tol = 1e-16, maxiter = 10000) {
@@ -141,7 +137,7 @@ logit_Laplace <- function(y, X, B, b, tol = 1e-16, maxiter = 10000) {
 }
 ```
 
-The marginal densities of the first two regression coefficients are reported, together with the "gold standard" obtained from the MCMC samples. 
+The marginal densities of the first two regression coefficients and the "gold standard" obtained from the MCMC samples are reported. 
 
 ```{r, fig.height = 4, fig.width = 8}
 library(tictoc)
@@ -219,7 +215,7 @@ logit_CAVI <- function(y, X, B, b, tol = 1e-16, maxiter = 10000) {
 }
 ```
 
-The marginal densities of the first two regression coefficients are reported, together with the "gold standard" obtained from the MCMC samples. 
+The marginal densities of the first two regression coefficients and the "gold standard" obtained from the MCMC samples are reported. 
 
 ```{r, fig.height = 4, fig.width = 8}
 tic()
@@ -237,7 +233,7 @@ curve(dnorm(x, fit_CAVI$mu[2], sqrt(fit_CAVI$Sigma[2, 2])), add = T)
 
 ## Hybrid Laplace
 
-THe fourth approach is based on the variational Bayes approximation mean estimate which is plugged-in into the Fisher information matrix. This procedure is described in the [**slides of unit D.2**](../slides/un_D2.pdf). 
+The fourth approach is based on the variational Bayes approximation mean estimate plugged into the Fisher information matrix. This procedure is **not** described in the slides of unit D.2. 
 
 ```{r}
 logit_HL <- function(y, X, B, b, tol = 1e-16, maxiter = 10000) {
@@ -248,7 +244,7 @@ logit_HL <- function(y, X, B, b, tol = 1e-16, maxiter = 10000) {
 }
 ```
 
-The marginal densities of the first two regression coefficients are reported, together with the "gold standard" obtained from the MCMC samples. 
+The marginal densities of the first two regression coefficients and the "gold standard" obtained from the MCMC samples are reported. 
 
 ```{r, fig.height = 4, fig.width = 8}
 fit_HL <- logit_HL(y, X, B, b)
@@ -264,7 +260,7 @@ curve(dnorm(x, fit_HL$mu[2], sqrt(fit_HL$Sigma[2, 2])), add = T)
 
 ## Further comparisons
 
-In the following, we report the posterior means and variances under the all the previous approximations together with the gold standard MCMC values. 
+We report the posterior means and variances under all the previous approximations and the gold standard MCMC values in the following. 
 
 ### Mean and variances
 
@@ -294,7 +290,7 @@ knitr::kable(Sd, digits = 4, row.names = F)
 
 ### Discrepancy from the optimal Gaussian
 
-In the last table, we comput the Kullback-Leibler divergence between the obtained Gaussian approximations and the "optimal" Gaussian distribution, which is the one matching the correct posterior mean and variance. These quantities are approximated using MCMC. 
+In the last table, we compute the Kullback-Leibler divergence between the obtained Gaussian approximations and the "optimal" Gaussian distribution, which matches the correct posterior mean and variance. These quantities are approximated using MCMC. 
 
 ```{r}
 KL_gauss <- function(mu1, Sigma1, mu2, Sigma2) {
