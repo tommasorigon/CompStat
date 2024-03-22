@@ -1,5 +1,5 @@
 ---
-title: "Computational Statistics II"
+title: "Bayesian computations"
 subtitle: "Unit A.1: R programming and MCMC"
 author:
   name: Tommaso Rigon

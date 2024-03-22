@@ -1,5 +1,5 @@
 ---
-title: "Computational Statistics II"
+title: "Bayesian computations"
 subtitle: "Homework 2"
 author:
   name: Tommaso Rigon
@@ -23,10 +23,6 @@ format:
 editor_options: 
   chunk_output_type: console
 ---
-
-```{r startup, include = FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = T, eval = T, message = F, warning = F, error = F, comment = NA, cache = F, include = T, R.options = list(width = 100), collapse = T, dpi = 200, fig.align = "center", fig.height = 5, fig.width = 8)
-```
 
 The homeworks are not graded, but the results may be sent to tommaso.rigon@unimib.it to receive feedbacks. 
 

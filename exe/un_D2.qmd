@@ -1,5 +1,5 @@
 ---
-title: "Computational Statistics II"
+title: "Bayesian computations"
 subtitle: "Laplace approximation, Variational Bayes, Expectation Propagation"
 author:
   name: Tommaso Rigon

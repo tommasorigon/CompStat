@@ -1,5 +1,5 @@
 ---
-title: "Computational Statistics II"
+title: "Bayesian computations"
 subtitle: "Unit A.2: Rcpp & RcppArmadillo"
 author:
   name: Tommaso Rigon

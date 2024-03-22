@@ -1,5 +1,5 @@
 ---
-title: "Computational Statistics II"
+title: "Bayesian computations"
 subtitle: "Unit B.1: Optimal scaling & adaptive Metropolis"
 author:
   name: Tommaso Rigon

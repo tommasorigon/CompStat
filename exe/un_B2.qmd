@@ -1,5 +1,5 @@
 ---
-title: "Computational Statistics II"
+title: "Bayesian computations"
 subtitle: "MALA algorithm, Hamiltonian Monte Carlo & Pólya-gamma data augmentation"
 author:
   name: Tommaso Rigon
