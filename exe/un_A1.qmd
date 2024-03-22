@@ -26,7 +26,7 @@ editor_options:
 
 ## Autoregressive processes (example)
 
-The following code allows to simulate from an autoregressive process. Autoregressive processes provide a simple illustration of **Markov chains** on continuous state-space.
+The following code allows for simulation from an autoregressive process to illustrate **Markov chains** on a continuous state space.
 
 Let $Y^{(0)} \sim N(10, 1)$ and let us define
 
@@ -42,7 +42,7 @@ $$
 (y^{(r)} \mid y^{(r-1)})  \sim \text{N}(\rho y^{(r-1)}, 1).
 $$ 
 
-If the parameter $|\rho| < 1$ then the Markov chain has a more "**stable**" behaviour (i.e. the process is stationary).
+If the parameter $|\rho| < 1$, then the Markov chain has a more "**stable**" behavior (i.e., the process is stationary).
 
 ```{r}
 R <- 300
@@ -75,18 +75,18 @@ plot(y_nstat, type = "l")
 
 Suppose we wish to simulate from a Gaussian distribution $\text{N}(\mu, \sigma^2)$ using a MH algorithm, whose density is $\pi(y)$.
 
-This is obviously a **toy example**, because in practice one would just use `rnorm`.  For the proposal distribution $q(y^* \mid y)$, we can use a **uniform random walk**, namely
+This is a **toy example** because one would use `rnorm` in practice.  For the proposal distribution $q(y^* \mid y)$, we can use a **uniform random walk**, namely
 $$
 y^* = y + u, \qquad u \sim \text{Unif}(-\epsilon, \epsilon).
 $$
-The choice of $\epsilon > 0$ will have an impact on the algorithm, as we shall see.
+The choice of $\epsilon > 0$ will impact the algorithm, as we shall see.
 
 Random walks are **symmetric** proposals distributions, so $q(y^* \mid y) = q(y \mid y^*)$. This means the acceptance probability $\alpha$ is equal to
 $$
 \alpha(y^*, y) = \min\left\{1, \frac{\pi(y^*)} {\pi(y)}\right\}.
 $$
 
-The implementation in **R** for a generic Gaussian with mean `mu` and standard deviation `sig` is the following code. Morerover, here `x0` is the starting value and `ep` corresponds to $\epsilon$.
+The following code is implemented in **R** for a generic Gaussian with mean `mu` and standard deviation `sig`. Moreover, here, `x0` is the starting value, and `ep` corresponds to $\epsilon$.
 
 ```{r}
 norm_mcmc <- function(R, mu, sig, ep, x0) {
@@ -103,7 +103,7 @@ norm_mcmc <- function(R, mu, sig, ep, x0) {
         xs     <- x + runif(1, -ep, ep)
         # Acceptance probability
         alpha  <- min(dnorm(xs, mu, sig) / dnorm(x, mu, sig), 1)
-        # Acceptance / rejection step
+        # Acceptance/rejection step
         accept <- rbinom(1, size = 1, prob = alpha)
     
         if(accept == 1) {
@@ -200,13 +200,13 @@ plot(sim, type = "b")
 
 ## The `hearth` dataset
 
-In first place, let us load the `stanford2` dataset, which is available in the `survival` R package. As described in the documentation, this dataset includes:
+First, load the `stanford2` dataset, available in the `survival` R package. As described in the documentation, this dataset includes:
 
 > Survival of patients on the waiting list for the Stanford heart transplant program.
 
-See also the documentation of the `hearth` dataset for a more complete description. The survival times are saved in the `time` variable which can be either **complete** (`status = 1`) or **censored** (`status = 0`).
+See also the documentation of the `hearth` dataset for a more complete description. The survival times are saved in the `time` variable, which can be either **complete** (`status = 1`) or **censored** (`status = 0`).
 
-Let $\textbf{t} = (t_1,\dots,t_n)^\intercal$ be the vector of the observed survival times and let $\textbf{d} = (d_1,\dots,d_n)^\intercal$ be the corresponding binary vector of censorship statuses. We load in **R** these quantities and we obtain the **Kaplan-Meier** estimate of the survival function.
+Let $\textbf{t} = (t_1,\dots,t_n)^\intercal$ be the vector of the observed survival times and let $\textbf{d} = (d_1,\dots,d_n)^\intercal$ be the corresponding binary vector of censorship statuses. We load these quantities in **R** and obtain the **Kaplan-Meier** estimate of the survival function.
 
 ```{r}
 library(survival)
@@ -220,8 +220,7 @@ plot(fit_KM)
 
 ### Weibull model and likelihood function
 
-We are interested in fitting a Bayesian model for estimating the survival function and quantify the associated uncertainty. A common parametric model for survival data is the **Weibull** model, which has the following density, hazard and survival functions
-
+We are interested in fitting a Bayesian model to estimate the survival function and quantify the associated uncertainty. A standard parametric model for survival data is the **Weibull** model, which has the following density, hazard, and survival functions
 $$
 f(t \mid \alpha, \beta) = \frac{\alpha}{\beta}\left(\frac{t}{\beta}\right)^{\alpha - 1}\exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\right\},
 \quad h(t \mid \alpha, \beta) = \frac{\alpha}{\beta}\left(\frac{t}{\beta}\right)^{\alpha - 1},
@@ -231,7 +230,6 @@ $$
 S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\right\}. 
 $$ 
 The likelihood for this parametric model, under suitable censorship assumptions, is the following
-
 $$
 \mathscr{L}(\alpha, \beta; \textbf{t},\textbf{d}) \propto \prod_{i=1}^n h(t_i \mid \alpha, \beta)^{d_i} S(t_i \mid \alpha, \beta) = \prod_{i : d_i=1}f(t_i \mid \alpha, \beta) \prod_{i: d_i = 0}S(t_i \mid \alpha,\beta),
 $$ 
@@ -249,7 +247,7 @@ loglik_inaccurate <- function(t, d, alpha, beta) {
 }
 ```
 
-The log-likelihood is written in terms of products, which are numerically very unstable. Note for example that we may get `-Inf`, which is due to numerical inaccuracies.
+The log-likelihood is written in terms of products, which are numerically very unstable. Note, for example, that we may get `-Inf` due to numerical inaccuracies.
 
 ```{r}
 loglik_inaccurate(t, d, alpha = 0.5, beta = 1000) # As it will be clear later on, these are likely values
@@ -257,7 +255,7 @@ loglik_inaccurate(t, d, alpha = 0.5, beta = 1000) # As it will be clear later on
 
 #### Inefficient implementations
 
-The following two implementation are instead numerically stable but not efficient
+The following two implementations are instead numerically stable but not efficient.
 
 ```{r}
 # 1st inefficient implementation
@@ -294,7 +292,7 @@ loglik_inefficient2(t, d, alpha = 0.5, beta = 1000)
 
 #### Accurate and efficient implementation
 
-The following implementation is instead numerically accurate and more efficient
+The following implementation is instead numerically accurate and more efficient.
 
 ```{r}
 # Efficient and numerically stable version
@@ -323,13 +321,13 @@ benchmark(
 
 ### Prior specification
 
-Within the Bayesian framework, we need to specify also prior distributions. Since the focus of the course is on **computations** we will not explore the sensitivity to the prior and we present a single "reasonable" choice. Note that both $\alpha,\beta$ are strictly positive, therefore we could choose
+Within the Bayesian framework, we also need to specify prior distributions. Since the course focuses on **computations**, we will not explore the sensitivity to the prior and present a single "reasonable" choice. Note that both $\alpha,\beta$ are strictly positive, therefore we could choose
 
 $$
 \theta_1 = \log{\alpha} \sim \text{N}(0,100), \qquad \theta_2 = \log(\beta) \sim \text{N}(0,100).
 $$
 
-Hence, in **R** we can define the log-prior and the log-posterior in terms of the transformed parameters $\theta = (\theta_1, \theta_2)$ as follows
+Hence, in **R**, we can define the log-prior and the log-posterior in terms of the transformed parameters $\theta = (\theta_1, \theta_2)$ as follows
 
 ```{r}
 logprior <- function(theta) {
@@ -343,7 +341,7 @@ logpost <- function(t, d, theta) {
 
 ## Metropolis-Hastings
 
-We aim at obtainins (possibly correlated) samples from the posterior distribution
+We aim to obtain (possibly correlated) samples from the posterior distribution
 
 $$
 f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \theta_2; \textbf{t},\textbf{d})f(\theta_1)f(\theta_2),
@@ -352,7 +350,7 @@ $$ recalling that $\theta_1 = \log{\alpha}$ and $\theta_2 = \log{\beta}$. This c
 The algorithm we described is implemented in R in the following.
 
 ```{r}
-# R represent the number of samples
+# R represents the number of samples
 # burn_in is the number of discarded samples
 RMH <- function(R, burn_in, t, d) {
   out <- matrix(0, R, 2) # Initialize an empty matrix to store the values
@@ -414,7 +412,7 @@ effectiveSize(fit_MCMC) # Effective sample size
 # Grid of values on which the survival function is computed
 grid <- seq(0, 3700, length = 50)
 
-# Initialized the empy vectors
+# Initialized the empty vectors
 S_mean <- numeric(length(grid))
 S_upper <- numeric(length(grid))
 S_lower <- numeric(length(grid))

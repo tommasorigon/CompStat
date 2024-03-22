@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.433">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -23,7 +23,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -87,6 +87,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </script>
   <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
 
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
 </head>
 
 <body>
@@ -123,21 +150,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 
 
-<div class="quarto-title-meta-author">
+<div class="quarto-title-meta-author column-page-left">
   <div class="quarto-title-meta-heading">Author</div>
   <div class="quarto-title-meta-heading">Affiliation</div>
   
     <div class="quarto-title-meta-contents">
     <p class="author">Tommaso Rigon </p>
   </div>
-    <div class="quarto-title-meta-contents">
+  <div class="quarto-title-meta-contents">
         <p class="affiliation">
             DEMS
           </p>
       </div>
-    </div>
+  </div>
 
-<div class="quarto-title-meta">
+<div class="quarto-title-meta column-page-left">
 
       
   
@@ -145,11 +172,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </div>
   
 
+
 </header>
+
 
 <section id="autoregressive-processes-example" class="level2">
 <h2 class="anchored" data-anchor-id="autoregressive-processes-example">Autoregressive processes (example)</h2>
-<p>The following code allows to simulate from an autoregressive process. Autoregressive processes provide a simple illustration of <strong>Markov chains</strong> on continuous state-space.</p>
+<p>The following code allows for simulation from an autoregressive process to illustrate <strong>Markov chains</strong> on a continuous state space.</p>
 <p>Let <span class="math inline">Y^{(0)} \sim N(10, 1)</span> and let us define</p>
 <p><span class="math display">
 Y^{(r)} = \rho Y^{(r-1)} + \epsilon^{(r)}, \qquad \phi \in \mathbb{R},
@@ -159,7 +188,7 @@ Y^{(r)} = \rho Y^{(r-1)} + \epsilon^{(r)}, \qquad \phi \in \mathbb{R},
 <p><span class="math display">
 (y^{(r)} \mid y^{(r-1)})  \sim \text{N}(\rho y^{(r-1)}, 1).
 </span></p>
-<p>If the parameter <span class="math inline">|\rho| &lt; 1</span> then the Markov chain has a more “<strong>stable</strong>” behaviour (i.e.&nbsp;the process is stationary).</p>
+<p>If the parameter <span class="math inline">|\rho| &lt; 1</span>, then the Markov chain has a more “<strong>stable</strong>” behavior (i.e., the process is stationary).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>R <span class="ot">&lt;-</span> <span class="dv">300</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a></span>
@@ -174,7 +203,11 @@ Y^{(r)} = \rho Y^{(r-1)} + \epsilon^{(r)}, \qquad \phi \in \mathbb{R},
 <span id="cb1-11"><a href="#cb1-11"></a></span>
 <span id="cb1-12"><a href="#cb1-12"></a><span class="fu">plot</span>(y_stat, <span class="at">type =</span> <span class="st">"l"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_A1_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_A1_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 <div class="cell">
@@ -188,20 +221,24 @@ Y^{(r)} = \rho Y^{(r-1)} + \epsilon^{(r)}, \qquad \phi \in \mathbb{R},
 <span id="cb2-8"><a href="#cb2-8"></a>}</span>
 <span id="cb2-9"><a href="#cb2-9"></a><span class="fu">plot</span>(y_nstat, <span class="at">type =</span> <span class="st">"l"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_A1_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_A1_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="gaussian-example" class="level2">
 <h2 class="anchored" data-anchor-id="gaussian-example">Gaussian example</h2>
 <p>Suppose we wish to simulate from a Gaussian distribution <span class="math inline">\text{N}(\mu, \sigma^2)</span> using a MH algorithm, whose density is <span class="math inline">\pi(y)</span>.</p>
-<p>This is obviously a <strong>toy example</strong>, because in practice one would just use <code>rnorm</code>. For the proposal distribution <span class="math inline">q(y^* \mid y)</span>, we can use a <strong>uniform random walk</strong>, namely <span class="math display">
+<p>This is a <strong>toy example</strong> because one would use <code>rnorm</code> in practice. For the proposal distribution <span class="math inline">q(y^* \mid y)</span>, we can use a <strong>uniform random walk</strong>, namely <span class="math display">
 y^* = y + u, \qquad u \sim \text{Unif}(-\epsilon, \epsilon).
-</span> The choice of <span class="math inline">\epsilon &gt; 0</span> will have an impact on the algorithm, as we shall see.</p>
+</span> The choice of <span class="math inline">\epsilon &gt; 0</span> will impact the algorithm, as we shall see.</p>
 <p>Random walks are <strong>symmetric</strong> proposals distributions, so <span class="math inline">q(y^* \mid y) = q(y \mid y^*)</span>. This means the acceptance probability <span class="math inline">\alpha</span> is equal to <span class="math display">
 \alpha(y^*, y) = \min\left\{1, \frac{\pi(y^*)} {\pi(y)}\right\}.
 </span></p>
-<p>The implementation in <strong>R</strong> for a generic Gaussian with mean <code>mu</code> and standard deviation <code>sig</code> is the following code. Morerover, here <code>x0</code> is the starting value and <code>ep</code> corresponds to <span class="math inline">\epsilon</span>.</p>
+<p>The following code is implemented in <strong>R</strong> for a generic Gaussian with mean <code>mu</code> and standard deviation <code>sig</code>. Moreover, here, <code>x0</code> is the starting value, and <code>ep</code> corresponds to <span class="math inline">\epsilon</span>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>norm_mcmc <span class="ot">&lt;-</span> <span class="cf">function</span>(R, mu, sig, ep, x0) {</span>
 <span id="cb3-2"><a href="#cb3-2"></a>    </span>
@@ -217,7 +254,7 @@ y^* = y + u, \qquad u \sim \text{Unif}(-\epsilon, \epsilon).
 <span id="cb3-12"><a href="#cb3-12"></a>        xs     <span class="ot">&lt;-</span> x <span class="sc">+</span> <span class="fu">runif</span>(<span class="dv">1</span>, <span class="sc">-</span>ep, ep)</span>
 <span id="cb3-13"><a href="#cb3-13"></a>        <span class="co"># Acceptance probability</span></span>
 <span id="cb3-14"><a href="#cb3-14"></a>        alpha  <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">dnorm</span>(xs, mu, sig) <span class="sc">/</span> <span class="fu">dnorm</span>(x, mu, sig), <span class="dv">1</span>)</span>
-<span id="cb3-15"><a href="#cb3-15"></a>        <span class="co"># Acceptance / rejection step</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a>        <span class="co"># Acceptance/rejection step</span></span>
 <span id="cb3-16"><a href="#cb3-16"></a>        accept <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="dv">1</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> alpha)</span>
 <span id="cb3-17"><a href="#cb3-17"></a>    </span>
 <span id="cb3-18"><a href="#cb3-18"></a>        <span class="cf">if</span>(accept <span class="sc">==</span> <span class="dv">1</span>) {</span>
@@ -244,7 +281,11 @@ y^* = y + u, \qquad u \sim \text{Unif}(-\epsilon, \epsilon).
 <span id="cb5-4"><a href="#cb5-4"></a><span class="fu">plot</span>(sim3, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">main =</span> <span class="st">"ep = 10"</span>, <span class="at">ylab =</span> <span class="st">"y"</span>, <span class="at">xlab =</span> <span class="st">"iteration"</span>)</span>
 <span id="cb5-5"><a href="#cb5-5"></a><span class="fu">plot</span>(sim4, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">main =</span> <span class="st">"ep = 1"</span>, <span class="at">ylab =</span> <span class="st">"y"</span>, <span class="at">xlab =</span> <span class="st">"iteration"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_A1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_A1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 <div class="cell">
@@ -254,7 +295,11 @@ y^* = y + u, \qquad u \sim \text{Unif}(-\epsilon, \epsilon).
 <span id="cb6-4"><a href="#cb6-4"></a><span class="fu">acf</span>(sim3)</span>
 <span id="cb6-5"><a href="#cb6-5"></a><span class="fu">acf</span>(sim4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_A1_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_A1_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 <div class="cell">
@@ -268,7 +313,11 @@ y^* = y + u, \qquad u \sim \text{Unif}(-\epsilon, \epsilon).
 <span id="cb7-8"><a href="#cb7-8"></a><span class="fu">hist</span>(sim, <span class="at">breaks =</span> <span class="dv">100</span>, <span class="at">freq =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb7-9"><a href="#cb7-9"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, <span class="dv">2</span>, <span class="dv">5</span>), <span class="at">add =</span> T) <span class="co"># This is usually not known!</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_A1_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_A1_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 <div class="cell">
@@ -278,7 +327,11 @@ y^* = y + u, \qquad u \sim \text{Unif}(-\epsilon, \epsilon).
 <span id="cb8-4"><a href="#cb8-4"></a><span class="fu">acf</span>(sim3)</span>
 <span id="cb8-5"><a href="#cb8-5"></a><span class="fu">acf</span>(sim4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_A1_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_A1_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
@@ -314,18 +367,22 @@ y^* = y + u, \qquad u \sim \text{Unif}(-\epsilon, \epsilon).
 <span id="cb11-2"><a href="#cb11-2"></a>sim <span class="ot">&lt;-</span> <span class="fu">bvnorm_mcmc</span>(<span class="dv">1000</span>, <span class="at">rho =</span> <span class="fl">0.85</span>, <span class="at">ep =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">x0 =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>))</span>
 <span id="cb11-3"><a href="#cb11-3"></a><span class="fu">plot</span>(sim, <span class="at">type =</span> <span class="st">"b"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_A1_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_A1_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="the-hearth-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="the-hearth-dataset">The <code>hearth</code> dataset</h2>
-<p>In first place, let us load the <code>stanford2</code> dataset, which is available in the <code>survival</code> R package. As described in the documentation, this dataset includes:</p>
+<p>First, load the <code>stanford2</code> dataset, available in the <code>survival</code> R package. As described in the documentation, this dataset includes:</p>
 <blockquote class="blockquote">
 <p>Survival of patients on the waiting list for the Stanford heart transplant program.</p>
 </blockquote>
-<p>See also the documentation of the <code>hearth</code> dataset for a more complete description. The survival times are saved in the <code>time</code> variable which can be either <strong>complete</strong> (<code>status = 1</code>) or <strong>censored</strong> (<code>status = 0</code>).</p>
-<p>Let <span class="math inline">\textbf{t} = (t_1,\dots,t_n)^\intercal</span> be the vector of the observed survival times and let <span class="math inline">\textbf{d} = (d_1,\dots,d_n)^\intercal</span> be the corresponding binary vector of censorship statuses. We load in <strong>R</strong> these quantities and we obtain the <strong>Kaplan-Meier</strong> estimate of the survival function.</p>
+<p>See also the documentation of the <code>hearth</code> dataset for a more complete description. The survival times are saved in the <code>time</code> variable, which can be either <strong>complete</strong> (<code>status = 1</code>) or <strong>censored</strong> (<code>status = 0</code>).</p>
+<p>Let <span class="math inline">\textbf{t} = (t_1,\dots,t_n)^\intercal</span> be the vector of the observed survival times and let <span class="math inline">\textbf{d} = (d_1,\dots,d_n)^\intercal</span> be the corresponding binary vector of censorship statuses. We load these quantities in <strong>R</strong> and obtain the <strong>Kaplan-Meier</strong> estimate of the survival function.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="fu">library</span>(survival)</span>
 <span id="cb12-2"><a href="#cb12-2"></a>t <span class="ot">&lt;-</span> stanford2<span class="sc">$</span>time <span class="co"># Survival times</span></span>
@@ -335,19 +392,21 @@ y^* = y + u, \qquad u \sim \text{Unif}(-\epsilon, \epsilon).
 <span id="cb12-6"><a href="#cb12-6"></a>fit_KM <span class="ot">&lt;-</span> <span class="fu">survfit</span>(<span class="fu">Surv</span>(t, d) <span class="sc">~</span> <span class="dv">1</span>)</span>
 <span id="cb12-7"><a href="#cb12-7"></a><span class="fu">plot</span>(fit_KM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_A1_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_A1_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 <section id="weibull-model-and-likelihood-function" class="level3">
 <h3 class="anchored" data-anchor-id="weibull-model-and-likelihood-function">Weibull model and likelihood function</h3>
-<p>We are interested in fitting a Bayesian model for estimating the survival function and quantify the associated uncertainty. A common parametric model for survival data is the <strong>Weibull</strong> model, which has the following density, hazard and survival functions</p>
-<p><span class="math display">
+<p>We are interested in fitting a Bayesian model to estimate the survival function and quantify the associated uncertainty. A standard parametric model for survival data is the <strong>Weibull</strong> model, which has the following density, hazard, and survival functions <span class="math display">
 f(t \mid \alpha, \beta) = \frac{\alpha}{\beta}\left(\frac{t}{\beta}\right)^{\alpha - 1}\exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\right\},
 \quad h(t \mid \alpha, \beta) = \frac{\alpha}{\beta}\left(\frac{t}{\beta}\right)^{\alpha - 1},
 </span> and <span class="math display">
 S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\right\}.
-</span> The likelihood for this parametric model, under suitable censorship assumptions, is the following</p>
-<p><span class="math display">
+</span> The likelihood for this parametric model, under suitable censorship assumptions, is the following <span class="math display">
 \mathscr{L}(\alpha, \beta; \textbf{t},\textbf{d}) \propto \prod_{i=1}^n h(t_i \mid \alpha, \beta)^{d_i} S(t_i \mid \alpha, \beta) = \prod_{i : d_i=1}f(t_i \mid \alpha, \beta) \prod_{i: d_i = 0}S(t_i \mid \alpha,\beta),
 </span> because <span class="math inline">f(t \mid \alpha, \beta) = h(t\mid \alpha,\beta)S(t \mid \alpha, \beta)</span>.</p>
 <section id="inaccurate-implementation" class="level4">
@@ -360,7 +419,7 @@ S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\rig
 <span id="cb13-4"><a href="#cb13-4"></a>  <span class="fu">log</span>(hazard <span class="sc">*</span> survival)</span>
 <span id="cb13-5"><a href="#cb13-5"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The log-likelihood is written in terms of products, which are numerically very unstable. Note for example that we may get <code>-Inf</code>, which is due to numerical inaccuracies.</p>
+<p>The log-likelihood is written in terms of products, which are numerically very unstable. Note, for example, that we may get <code>-Inf</code> due to numerical inaccuracies.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="fu">loglik_inaccurate</span>(t, d, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">beta =</span> <span class="dv">1000</span>) <span class="co"># As it will be clear later on, these are likely values</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -370,7 +429,7 @@ S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\rig
 </section>
 <section id="inefficient-implementations" class="level4">
 <h4 class="anchored" data-anchor-id="inefficient-implementations">Inefficient implementations</h4>
-<p>The following two implementation are instead numerically stable but not efficient</p>
+<p>The following two implementations are instead numerically stable but not efficient.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># 1st inefficient implementation</span></span>
 <span id="cb16-2"><a href="#cb16-2"></a>loglik_inefficient1 <span class="ot">&lt;-</span> <span class="cf">function</span>(t, d, alpha, beta) {</span>
@@ -411,7 +470,7 @@ S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\rig
 </section>
 <section id="accurate-and-efficient-implementation" class="level4">
 <h4 class="anchored" data-anchor-id="accurate-and-efficient-implementation">Accurate and efficient implementation</h4>
-<p>The following implementation is instead numerically accurate and more efficient</p>
+<p>The following implementation is instead numerically accurate and more efficient.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># Efficient and numerically stable version</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a>loglik <span class="ot">&lt;-</span> <span class="cf">function</span>(t, d, alpha, beta) {</span>
@@ -428,7 +487,7 @@ S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\rig
 </section>
 <section id="benchmarking" class="level4">
 <h4 class="anchored" data-anchor-id="benchmarking">Benchmarking</h4>
-<div class="cell" data-hash="un_A1_cache/html/unnamed-chunk-18_56630405b5d837b49e61f997c8b8113f">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="fu">library</span>(rbenchmark) <span class="co"># Library for performing benchmarking</span></span>
 <span id="cb23-2"><a href="#cb23-2"></a></span>
 <span id="cb23-3"><a href="#cb23-3"></a><span class="fu">benchmark</span>(</span>
@@ -449,11 +508,11 @@ S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\rig
 </section>
 <section id="prior-specification" class="level3">
 <h3 class="anchored" data-anchor-id="prior-specification">Prior specification</h3>
-<p>Within the Bayesian framework, we need to specify also prior distributions. Since the focus of the course is on <strong>computations</strong> we will not explore the sensitivity to the prior and we present a single “reasonable” choice. Note that both <span class="math inline">\alpha,\beta</span> are strictly positive, therefore we could choose</p>
+<p>Within the Bayesian framework, we also need to specify prior distributions. Since the course focuses on <strong>computations</strong>, we will not explore the sensitivity to the prior and present a single “reasonable” choice. Note that both <span class="math inline">\alpha,\beta</span> are strictly positive, therefore we could choose</p>
 <p><span class="math display">
 \theta_1 = \log{\alpha} \sim \text{N}(0,100), \qquad \theta_2 = \log(\beta) \sim \text{N}(0,100).
 </span></p>
-<p>Hence, in <strong>R</strong> we can define the log-prior and the log-posterior in terms of the transformed parameters <span class="math inline">\theta = (\theta_1, \theta_2)</span> as follows</p>
+<p>Hence, in <strong>R</strong>, we can define the log-prior and the log-posterior in terms of the transformed parameters <span class="math inline">\theta = (\theta_1, \theta_2)</span> as follows</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>logprior <span class="ot">&lt;-</span> <span class="cf">function</span>(theta) {</span>
 <span id="cb25-2"><a href="#cb25-2"></a>  <span class="fu">sum</span>(<span class="fu">dnorm</span>(theta, <span class="dv">0</span>, <span class="fu">sqrt</span>(<span class="dv">100</span>), <span class="at">log =</span> <span class="cn">TRUE</span>))</span>
@@ -467,13 +526,13 @@ S(t \mid \alpha, \beta) = \exp\left\{- \left(\frac{t}{\beta}\right)^{\alpha}\rig
 </section>
 <section id="metropolis-hastings" class="level2">
 <h2 class="anchored" data-anchor-id="metropolis-hastings">Metropolis-Hastings</h2>
-<p>We aim at obtainins (possibly correlated) samples from the posterior distribution</p>
+<p>We aim to obtain (possibly correlated) samples from the posterior distribution</p>
 <p><span class="math display">
 f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \theta_2; \textbf{t},\textbf{d})f(\theta_1)f(\theta_2),
 </span> recalling that <span class="math inline">\theta_1 = \log{\alpha}</span> and <span class="math inline">\theta_2 = \log{\beta}</span>. This can be done using a random walk Metropolis-Hastings algorithm.</p>
 <p>The algorithm we described is implemented in R in the following.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="co"># R represent the number of samples</span></span>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="co"># R represents the number of samples</span></span>
 <span id="cb26-2"><a href="#cb26-2"></a><span class="co"># burn_in is the number of discarded samples</span></span>
 <span id="cb26-3"><a href="#cb26-3"></a>RMH <span class="ot">&lt;-</span> <span class="cf">function</span>(R, burn_in, t, d) {</span>
 <span id="cb26-4"><a href="#cb26-4"></a>  out <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, R, <span class="dv">2</span>) <span class="co"># Initialize an empty matrix to store the values</span></span>
@@ -497,7 +556,7 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 <span id="cb26-22"><a href="#cb26-22"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can now run the algorithm. We choose <code>R = 50000</code> and <code>burn_in = 5000</code>.</p>
-<div class="cell" data-hash="un_A1_cache/html/unnamed-chunk-21_c3763409b92180d374b6993666cefb12">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>R <span class="ot">&lt;-</span> <span class="dv">50000</span></span>
 <span id="cb27-2"><a href="#cb27-2"></a>burn_in <span class="ot">&lt;-</span> <span class="dv">5000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -509,7 +568,7 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 <span id="cb28-5"><a href="#cb28-5"></a>fit_MCMC <span class="ot">&lt;-</span> <span class="fu">RMH</span>(R, burn_in, t, d)</span>
 <span id="cb28-6"><a href="#cb28-6"></a><span class="fu">toc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.467 sec elapsed</code></pre>
+<pre><code>0.462 sec elapsed</code></pre>
 </div>
 </div>
 </section>
@@ -523,7 +582,11 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 <span id="cb30-3"><a href="#cb30-3"></a>fit_MCMC <span class="ot">&lt;-</span> <span class="fu">as.mcmc</span>(fit_MCMC) <span class="co"># Convert the matrix into a "coda" object</span></span>
 <span id="cb30-4"><a href="#cb30-4"></a><span class="fu">plot</span>(fit_MCMC)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_A1_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_A1_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 <div class="cell">
@@ -541,11 +604,11 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 </section>
 <section id="estimation-of-the-survival-curve" class="level3">
 <h3 class="anchored" data-anchor-id="estimation-of-the-survival-curve">Estimation of the survival curve</h3>
-<div class="cell" data-hash="un_A1_cache/html/unnamed-chunk-25_d9edc8420b73047bb2aab7f4b10407eb">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a><span class="co"># Grid of values on which the survival function is computed</span></span>
 <span id="cb35-2"><a href="#cb35-2"></a>grid <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">3700</span>, <span class="at">length =</span> <span class="dv">50</span>)</span>
 <span id="cb35-3"><a href="#cb35-3"></a></span>
-<span id="cb35-4"><a href="#cb35-4"></a><span class="co"># Initialized the empy vectors</span></span>
+<span id="cb35-4"><a href="#cb35-4"></a><span class="co"># Initialized the empty vectors</span></span>
 <span id="cb35-5"><a href="#cb35-5"></a>S_mean <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="fu">length</span>(grid))</span>
 <span id="cb35-6"><a href="#cb35-6"></a>S_upper <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="fu">length</span>(grid))</span>
 <span id="cb35-7"><a href="#cb35-7"></a>S_lower <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="fu">length</span>(grid))</span>
@@ -566,7 +629,11 @@ f(\theta_1,\theta_2 \mid \textbf{t},\textbf{d}) \propto \mathscr{L}(\theta_1, \t
 <span id="cb36-7"><a href="#cb36-7"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
 <span id="cb36-8"><a href="#cb36-8"></a>  <span class="fu">geom_ribbon</span>(<span class="at">alpha =</span> <span class="fl">0.1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_A1_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_A1_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
@@ -653,10 +720,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -666,8 +732,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -680,6 +755,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -723,6 +917,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -748,6 +943,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -808,6 +1029,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 
