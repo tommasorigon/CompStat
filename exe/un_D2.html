@@ -8,7 +8,7 @@
 
 <meta name="author" content="Tommaso Rigon">
 
-<title>Computational Statistics II</title>
+<title>Bayesian computations</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -141,7 +141,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Computational Statistics II</h1>
+<h1 class="title">Bayesian computations</h1>
 <p class="subtitle lead">Laplace approximation, Variational Bayes, Expectation Propagation</p>
 </div>
 
@@ -365,7 +365,7 @@ window.Quarto = {
 <span id="cb10-2"><a href="#cb10-2"></a>fit_CAVI <span class="ot">&lt;-</span> <span class="fu">logit_CAVI</span>(y, X, B, b)</span>
 <span id="cb10-3"><a href="#cb10-3"></a><span class="fu">toc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.027 sec elapsed</code></pre>
+<pre><code>0.034 sec elapsed</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
 <span id="cb12-2"><a href="#cb12-2"></a><span class="fu">plot</span>(<span class="fu">density</span>(fit_MCMC[, <span class="dv">1</span>]), <span class="at">xlab =</span> <span class="fu">expression</span>(beta[<span class="dv">1</span>]), <span class="at">lty =</span> <span class="st">"dotted"</span>, <span class="at">main =</span> <span class="st">""</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.6</span>))</span>
