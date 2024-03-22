@@ -28,14 +28,14 @@ editor_options:
 Rcpp::sourceCpp("RMH.cpp")
 ```
 
-In this unit we discuss several advanced MCMC strategies that have been presented in the [**slides of unit B.2**](../slides/un_B2.pdf) and [**slides of unit C.2**](../slides/un_C2.pdf), including **MALA**, **Hamiltonian Monte Carlo** and the Gibbs sampling based on the **Pólya-gamma data augmentation**. 
+In this unit, we discuss several advanced MCMC strategies that have been presented in the [**slides of unit B.2**](../slides/un_B2.pdf) and [**slides of unit C.2**](../slides/un_C2.pdf), including **MALA**, **Hamiltonian Monte Carlo** and the Gibbs sampling based on the **Pólya-gamma data augmentation**. 
 
-We will implement these proposals using the "famous" **Pima indian dataset**, as in the previous [**Markdown document B.1**](un_B1.html). Let me stress again that the purpose of this unit is mainly presenting the implementation of the various MCMC algorithms and not making "inference" about their general performance. Refer to the nice paper by [Chopin & Ridgway (2017)](https://projecteuclid.org/journals/statistical-science/volume-32/issue-1/Leave-Pima-Indians-Alone--Binary-Regression-as-a-Benchmark/10.1214/16-STS581.full) for a more comprehensive discussion on this aspect. 
+We will implement these proposals using the "famous" **Pima Indian dataset**, as in the previous [**Markdown document B.1**](un_B1.html). Let me stress again that the purpose of this unit is mainly to present the implementation of the various MCMC algorithms and not make "inferences" about their general performance. Refer to the excellent paper by [Chopin & Ridgway (2017)](https://projecteuclid.org/journals/statistical-science/volume-32/issue-1/Leave-Pima-Indians-Alone--Binary-Regression-as-a-Benchmark/10.1214/16-STS581.full) for a more comprehensive discussion on this aspect. 
 
 
 ## Pima indian dataset
 
-We will make use of the Pima indian dataset again, as in the previous [**Markdown document B.1**](un_B1.html). Importantly, note that in this document we will **not standardize the predictors** to make the computational problem more challenging. 
+We will use the Pima Indian dataset again, as in the previous [**Markdown document B.1**](un_B1.html). Importantly, note that in this document, we will **not standardize the predictors** to make the computational problem more challenging. 
 
 
 ```{r}
@@ -44,7 +44,7 @@ y <- as.numeric(Pima$type == "Yes") # Binary outcome
 X <- cbind(1, model.matrix(type ~ . - 1, data = Pima)) # Design matrix
 ```
 
-As done in [**Markdown document B.1**](un_B1.html), we will employ a relatively vague prior centered at $0$, namely $\beta \sim N(0, 100 I_p)$. Then, we implement the log-likelihood, the log-posterior and the **gradient** of the likelihood.
+As done in [**Markdown document B.1**](un_B1.html), we will employ a relatively vague prior centered at $0$, namely $\beta \sim N(0, 100 I_p)$. Then, we implement the log-likelihood, the log-posterior, and the **gradient** of the likelihood.
 
 ```{r}
 # Log-likelihood of a logistic regression model
@@ -66,15 +66,15 @@ lgradient <- function(beta, y, X) {
   loglik_gr + prior_gr
 }
 
-# Summary table for the 6 considered methods
+# Summary table for the six considered methods
 summary_tab <- matrix(0, nrow = 6, ncol = 4)
 colnames(summary_tab) <- c("Seconds", "Average ESS", "Average ESS per sec", "Average acceptance rate")
 rownames(summary_tab) <- c("MH Laplace + Rcpp", "MALA", "MALA tuned", "HMC", "STAN", "Pólya-Gamma")
 ```
 
-## Metropolis Hastings (Laplace) and Rcpp
+## Metropolis-Hastings (Laplace) and Rcpp
 
-We first consider a random walk Metropolis-Hastings algorithm based on *Rcpp* implementation. The source code can be found [**this file**](RMH.cpp). We again use a the Fisher information matrix as quick estimate for the covariance matrix. Refer to the [**slides of unit B.1**](../slides/un_B1.pdf) for more about this idea. 
+We first consider a random walk Metropolis-Hastings algorithm based on *Rcpp* implementation. The source code can be found [**this file**](RMH.cpp). Again, we use the Fisher information matrix as a quick estimate for the covariance matrix. Refer to the [**slides of unit B.1**](../slides/un_B1.pdf) for more about this idea. 
 
 ```{r}
 library(coda)
@@ -85,7 +85,7 @@ burn_in <- 5000
 ```{r}
 set.seed(123)
 
-# Covariance matrix is selected via laplace approximation
+# Covariance matrix is selected via Laplace approximation
 fit_logit <- glm(y ~ X - 1, family = binomial(link = "logit"))
 p <- ncol(X)
 S <- 2.38^2 * vcov(fit_logit) / p
@@ -114,12 +114,12 @@ summary_tab[1, ] <- c(
 plot(fit_MCMC[, 1:2])
 ```
 
-## MALA algoritm
+## MALA algorithm
 
-The MALA algorithm is described in the [**slides of unit B.2**](../slides/un_B2.pdf). Here we propose a general implementation which allows to specify a pre-conditioning matrix `S` and a scaling parameter `epsilon`. 
+The MALA algorithm is described in the [**slides of unit B.2**](../slides/un_B2.pdf). Here we propose a general implementation that specifies a pre-conditioning matrix `S` and a scaling parameter `epsilon`. 
 
 ```{r, cache=T}
-# R represent the number of samples
+# R represents the number of samples
 # burn_in is the number of discarded samples
 # epsilon, S are tuning parameter
 MALA <- function(R, burn_in, y, X, epsilon, S) {
@@ -163,12 +163,12 @@ MALA <- function(R, burn_in, y, X, epsilon, S) {
 }
 ```
 
-The first run of the MALA algorithm is performed using a diagonal matrix (i.e. no pre-conditioning). As detailed in the [**slides of unit B.2**](../slides/un_B2.pdf), this expected to perform poorly. 
+The first run of the MALA algorithm is performed using a diagonal matrix (i.e., no pre-conditioning). As detailed in the [**slides of unit B.2**](../slides/un_B2.pdf), this is expected to perform poorly. 
 
 ```{r, cache=T}
 set.seed(123)
 
-epsilon <- 0.0017 # After some trial ad error
+epsilon <- 0.0017 # After some trial and error
 
 # Running the MCMC
 start.time <- Sys.time()
@@ -205,9 +205,9 @@ burn_in <- 5000
 ```{r, cache=T}
 set.seed(123)
 
-epsilon <- 1.68 # After some trial ad error
+epsilon <- 1.68 # After some trial and error
 
-# Covariance matrix is selected via laplace approximation
+# Covariance matrix is selected via Laplace approximation
 fit_logit <- glm(y ~ X - 1, family = binomial(link = "logit"))
 S <- vcov(fit_logit)
 
@@ -235,7 +235,7 @@ plot(fit_MCMC[, 1:2])
 
 ## Hamiltonian Monte Carlo
 
-The following `HMC` function is an implementation of Hamiltonian Monte Carlo for a general parametric model. As before, the object `S` represents a pre-conditioning matrix. This code is an adaptation of the one written by [**Neal (2011)**](https://www.mcmchandbook.net/HandbookChapter5.pdf). 
+The following `HMC` function implements Hamiltonian Monte Carlo for a general parametric model. As before, the object `S` represents a pre-conditioning matrix. This code is an adaptation of the one written by [**Neal (2011)**](https://www.mcmchandbook.net/HandbookChapter5.pdf). 
 
 
 ```{r}
@@ -260,20 +260,20 @@ HMC <- function(R, burn_in, y, X, epsilon, S, L = 10) {
     for (l in 1:L) {
       # Make a full step for the position
       beta_new <- beta_new + epsilon * c(S %*% Pnew)
-      # Make a full step for the momentum, except at end of trajectory
+      # Make a full step for the momentum, except at the end of the trajectory
       if (l != L) Pnew <- Pnew + epsilon * lgradient(beta_new, y, X)
     }
     # Make a half step for momentum at the end.
     Pnew <- Pnew + epsilon * lgradient(beta_new, y, X) / 2
 
-    # Negate momentum at end of trajectory to make the proposal symmetric
+    # Negate momentum at the end of the trajectory to make the proposal symmetric
     Pnew <- - Pnew
 
-    # Evaluate potential and kinetic energies at the end of trajectory
+    # Evaluate potential and kinetic energies at the end of the trajectory
     logpnew <- logpost(beta_new, y, X)
     logKnew <- Pnew %*% S %*% Pnew / 2 
 
-    # Accept or reject the state at end of trajectory, returning either
+    # Accept or reject the state at the end of the trajectory, returning either
     # the position at the end of the trajectory or the initial position
     if (runif(1) < exp(logpnew - logp + logK - logKnew)) {
       logp <- logpnew
@@ -289,15 +289,15 @@ HMC <- function(R, burn_in, y, X, epsilon, S, L = 10) {
 }
 ```
 
-We run the `HMC` using the usual Fisher information matrix as covariance matrix. 
+We run the `HMC` using the usual Fisher information matrix as a covariance matrix. 
 
 ```{r, cache=T}
 set.seed(123)
 
-epsilon <- 0.25 # After some trial ad error
+epsilon <- 0.25 # After some trial and error
 L <- 10
 
-# Covariance matrix is selected via laplace approximation
+# Covariance matrix is selected via Laplace approximation
 fit_logit <- glm(y ~ X - 1, family = binomial(link = "logit"))
 S <- vcov(fit_logit)
 
@@ -326,7 +326,7 @@ plot(fit_MCMC[, 1:2])
 
 ## Hamiltonian Monte Carlo (Stan)
 
-For the sake of completeness, we also present the results obtained using the **Stan** software, which must be installed alongside the `rstan` R package. The [`logistic.stan`](logistic.stan) is available in this repository. The following chunk of code compile the model in C++. 
+For the sake of completeness, we also present the results obtained using the **Stan** software, which must be installed alongside the `rstan` R package. The [`logistic.stan`](logistic.stan) is available in this repository. The following chunk of code compiles the model in C++. 
 
 ```{r, warning=F, message=F, error = F, results='hide', cache = T}
 library(rstan)
@@ -371,7 +371,7 @@ plot(fit_HMC[, 1:2])
 
 ## Pólya-gamma data-augmentation
 
-The Pólya-gamma data-augmentation is described in the paper [Polson, N. G., Scott, J. G. and Windle J. (2013)](https://www.tandfonline.com/doi/full/10.1080/01621459.2013.829001). The simulation of the Pólya-gamma random variables is handled by the function `rpg.devroye` within the `BayesLogit` R package.
+The Pólya-gamma data augmentation is described in the paper [Polson, N. G., Scott, J. G. and Windle J. (2013)](https://www.tandfonline.com/doi/full/10.1080/01621459.2013.829001). The simulation of the Pólya-gamma random variables is handled by the function `rpg.devroye` within the `BayesLogit` R package.
 
 ```{r}
 library(BayesLogit)
@@ -447,7 +447,7 @@ plot(fit_MCMC[, 1:2])
 
 ## Results
 
-The summary statistics of all the above algorithm are reported in the table below. 
+The above algorithm's summary statistics are reported in the table below. 
 
 ```{r, echo=F}
 knitr::kable(summary_tab)

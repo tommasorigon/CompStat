@@ -125,8 +125,8 @@ window.Quarto = {
    
   <ul>
   <li><a href="#pima-indian-dataset" id="toc-pima-indian-dataset" class="nav-link active" data-scroll-target="#pima-indian-dataset">Pima indian dataset</a></li>
-  <li><a href="#metropolis-hastings-laplace-and-rcpp" id="toc-metropolis-hastings-laplace-and-rcpp" class="nav-link" data-scroll-target="#metropolis-hastings-laplace-and-rcpp">Metropolis Hastings (Laplace) and Rcpp</a></li>
-  <li><a href="#mala-algoritm" id="toc-mala-algoritm" class="nav-link" data-scroll-target="#mala-algoritm">MALA algoritm</a></li>
+  <li><a href="#metropolis-hastings-laplace-and-rcpp" id="toc-metropolis-hastings-laplace-and-rcpp" class="nav-link" data-scroll-target="#metropolis-hastings-laplace-and-rcpp">Metropolis-Hastings (Laplace) and Rcpp</a></li>
+  <li><a href="#mala-algorithm" id="toc-mala-algorithm" class="nav-link" data-scroll-target="#mala-algorithm">MALA algorithm</a></li>
   <li><a href="#mala-algorithm-with-pre-conditioning" id="toc-mala-algorithm-with-pre-conditioning" class="nav-link" data-scroll-target="#mala-algorithm-with-pre-conditioning">MALA algorithm with pre-conditioning</a></li>
   <li><a href="#hamiltonian-monte-carlo" id="toc-hamiltonian-monte-carlo" class="nav-link" data-scroll-target="#hamiltonian-monte-carlo">Hamiltonian Monte Carlo</a></li>
   <li><a href="#hamiltonian-monte-carlo-stan" id="toc-hamiltonian-monte-carlo-stan" class="nav-link" data-scroll-target="#hamiltonian-monte-carlo-stan">Hamiltonian Monte Carlo (Stan)</a></li>
@@ -170,17 +170,17 @@ window.Quarto = {
 </header>
 
 
-<p>In this unit we discuss several advanced MCMC strategies that have been presented in the <a href="../slides/un_B2.pdf"><strong>slides of unit B.2</strong></a> and <a href="../slides/un_C2.pdf"><strong>slides of unit C.2</strong></a>, including <strong>MALA</strong>, <strong>Hamiltonian Monte Carlo</strong> and the Gibbs sampling based on the <strong>Pólya-gamma data augmentation</strong>.</p>
-<p>We will implement these proposals using the “famous” <strong>Pima indian dataset</strong>, as in the previous <a href="un_B1.html"><strong>Markdown document B.1</strong></a>. Let me stress again that the purpose of this unit is mainly presenting the implementation of the various MCMC algorithms and not making “inference” about their general performance. Refer to the nice paper by <a href="https://projecteuclid.org/journals/statistical-science/volume-32/issue-1/Leave-Pima-Indians-Alone--Binary-Regression-as-a-Benchmark/10.1214/16-STS581.full">Chopin &amp; Ridgway (2017)</a> for a more comprehensive discussion on this aspect.</p>
+<p>In this unit, we discuss several advanced MCMC strategies that have been presented in the <a href="../slides/un_B2.pdf"><strong>slides of unit B.2</strong></a> and <a href="../slides/un_C2.pdf"><strong>slides of unit C.2</strong></a>, including <strong>MALA</strong>, <strong>Hamiltonian Monte Carlo</strong> and the Gibbs sampling based on the <strong>Pólya-gamma data augmentation</strong>.</p>
+<p>We will implement these proposals using the “famous” <strong>Pima Indian dataset</strong>, as in the previous <a href="un_B1.html"><strong>Markdown document B.1</strong></a>. Let me stress again that the purpose of this unit is mainly to present the implementation of the various MCMC algorithms and not make “inferences” about their general performance. Refer to the excellent paper by <a href="https://projecteuclid.org/journals/statistical-science/volume-32/issue-1/Leave-Pima-Indians-Alone--Binary-Regression-as-a-Benchmark/10.1214/16-STS581.full">Chopin &amp; Ridgway (2017)</a> for a more comprehensive discussion on this aspect.</p>
 <section id="pima-indian-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="pima-indian-dataset">Pima indian dataset</h2>
-<p>We will make use of the Pima indian dataset again, as in the previous <a href="un_B1.html"><strong>Markdown document B.1</strong></a>. Importantly, note that in this document we will <strong>not standardize the predictors</strong> to make the computational problem more challenging.</p>
+<p>We will use the Pima Indian dataset again, as in the previous <a href="un_B1.html"><strong>Markdown document B.1</strong></a>. Importantly, note that in this document, we will <strong>not standardize the predictors</strong> to make the computational problem more challenging.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>Pima <span class="ot">&lt;-</span> <span class="fu">rbind</span>(MASS<span class="sc">::</span>Pima.tr, MASS<span class="sc">::</span>Pima.te)</span>
 <span id="cb1-2"><a href="#cb1-2"></a>y <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(Pima<span class="sc">$</span>type <span class="sc">==</span> <span class="st">"Yes"</span>) <span class="co"># Binary outcome</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a>X <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="dv">1</span>, <span class="fu">model.matrix</span>(type <span class="sc">~</span> . <span class="sc">-</span> <span class="dv">1</span>, <span class="at">data =</span> Pima)) <span class="co"># Design matrix</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>As done in <a href="un_B1.html"><strong>Markdown document B.1</strong></a>, we will employ a relatively vague prior centered at <span class="math inline">0</span>, namely <span class="math inline">\beta \sim N(0, 100 I_p)</span>. Then, we implement the log-likelihood, the log-posterior and the <strong>gradient</strong> of the likelihood.</p>
+<p>As done in <a href="un_B1.html"><strong>Markdown document B.1</strong></a>, we will employ a relatively vague prior centered at <span class="math inline">0</span>, namely <span class="math inline">\beta \sim N(0, 100 I_p)</span>. Then, we implement the log-likelihood, the log-posterior, and the <strong>gradient</strong> of the likelihood.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># Log-likelihood of a logistic regression model</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a>loglik <span class="ot">&lt;-</span> <span class="cf">function</span>(beta, y, X) {</span>
@@ -201,15 +201,15 @@ window.Quarto = {
 <span id="cb2-17"><a href="#cb2-17"></a>  loglik_gr <span class="sc">+</span> prior_gr</span>
 <span id="cb2-18"><a href="#cb2-18"></a>}</span>
 <span id="cb2-19"><a href="#cb2-19"></a></span>
-<span id="cb2-20"><a href="#cb2-20"></a><span class="co"># Summary table for the 6 considered methods</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a><span class="co"># Summary table for the six considered methods</span></span>
 <span id="cb2-21"><a href="#cb2-21"></a>summary_tab <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> <span class="dv">6</span>, <span class="at">ncol =</span> <span class="dv">4</span>)</span>
 <span id="cb2-22"><a href="#cb2-22"></a><span class="fu">colnames</span>(summary_tab) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Seconds"</span>, <span class="st">"Average ESS"</span>, <span class="st">"Average ESS per sec"</span>, <span class="st">"Average acceptance rate"</span>)</span>
 <span id="cb2-23"><a href="#cb2-23"></a><span class="fu">rownames</span>(summary_tab) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"MH Laplace + Rcpp"</span>, <span class="st">"MALA"</span>, <span class="st">"MALA tuned"</span>, <span class="st">"HMC"</span>, <span class="st">"STAN"</span>, <span class="st">"Pólya-Gamma"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="metropolis-hastings-laplace-and-rcpp" class="level2">
-<h2 class="anchored" data-anchor-id="metropolis-hastings-laplace-and-rcpp">Metropolis Hastings (Laplace) and Rcpp</h2>
-<p>We first consider a random walk Metropolis-Hastings algorithm based on <em>Rcpp</em> implementation. The source code can be found <a href="RMH.cpp"><strong>this file</strong></a>. We again use a the Fisher information matrix as quick estimate for the covariance matrix. Refer to the <a href="../slides/un_B1.pdf"><strong>slides of unit B.1</strong></a> for more about this idea.</p>
+<h2 class="anchored" data-anchor-id="metropolis-hastings-laplace-and-rcpp">Metropolis-Hastings (Laplace) and Rcpp</h2>
+<p>We first consider a random walk Metropolis-Hastings algorithm based on <em>Rcpp</em> implementation. The source code can be found <a href="RMH.cpp"><strong>this file</strong></a>. Again, we use the Fisher information matrix as a quick estimate for the covariance matrix. Refer to the <a href="../slides/un_B1.pdf"><strong>slides of unit B.1</strong></a> for more about this idea.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">library</span>(coda)</span>
 <span id="cb3-2"><a href="#cb3-2"></a>R <span class="ot">&lt;-</span> <span class="dv">30000</span></span>
@@ -218,7 +218,7 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
 <span id="cb4-2"><a href="#cb4-2"></a></span>
-<span id="cb4-3"><a href="#cb4-3"></a><span class="co"># Covariance matrix is selected via laplace approximation</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co"># Covariance matrix is selected via Laplace approximation</span></span>
 <span id="cb4-4"><a href="#cb4-4"></a>fit_logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> X <span class="sc">-</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span>
 <span id="cb4-5"><a href="#cb4-5"></a>p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
 <span id="cb4-6"><a href="#cb4-6"></a>S <span class="ot">&lt;-</span> <span class="fl">2.38</span><span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> <span class="fu">vcov</span>(fit_logit) <span class="sc">/</span> p</span>
@@ -265,11 +265,11 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="mala-algoritm" class="level2">
-<h2 class="anchored" data-anchor-id="mala-algoritm">MALA algoritm</h2>
-<p>The MALA algorithm is described in the <a href="../slides/un_B2.pdf"><strong>slides of unit B.2</strong></a>. Here we propose a general implementation which allows to specify a pre-conditioning matrix <code>S</code> and a scaling parameter <code>epsilon</code>.</p>
+<section id="mala-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="mala-algorithm">MALA algorithm</h2>
+<p>The MALA algorithm is described in the <a href="../slides/un_B2.pdf"><strong>slides of unit B.2</strong></a>. Here we propose a general implementation that specifies a pre-conditioning matrix <code>S</code> and a scaling parameter <code>epsilon</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># R represent the number of samples</span></span>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># R represents the number of samples</span></span>
 <span id="cb11-2"><a href="#cb11-2"></a><span class="co"># burn_in is the number of discarded samples</span></span>
 <span id="cb11-3"><a href="#cb11-3"></a><span class="co"># epsilon, S are tuning parameter</span></span>
 <span id="cb11-4"><a href="#cb11-4"></a>MALA <span class="ot">&lt;-</span> <span class="cf">function</span>(R, burn_in, y, X, epsilon, S) {</span>
@@ -312,11 +312,11 @@ window.Quarto = {
 <span id="cb11-41"><a href="#cb11-41"></a>  out</span>
 <span id="cb11-42"><a href="#cb11-42"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The first run of the MALA algorithm is performed using a diagonal matrix (i.e.&nbsp;no pre-conditioning). As detailed in the <a href="../slides/un_B2.pdf"><strong>slides of unit B.2</strong></a>, this expected to perform poorly.</p>
+<p>The first run of the MALA algorithm is performed using a diagonal matrix (i.e., no pre-conditioning). As detailed in the <a href="../slides/un_B2.pdf"><strong>slides of unit B.2</strong></a>, this is expected to perform poorly.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
 <span id="cb12-2"><a href="#cb12-2"></a></span>
-<span id="cb12-3"><a href="#cb12-3"></a>epsilon <span class="ot">&lt;-</span> <span class="fl">0.0017</span> <span class="co"># After some trial ad error</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>epsilon <span class="ot">&lt;-</span> <span class="fl">0.0017</span> <span class="co"># After some trial and error</span></span>
 <span id="cb12-4"><a href="#cb12-4"></a></span>
 <span id="cb12-5"><a href="#cb12-5"></a><span class="co"># Running the MCMC</span></span>
 <span id="cb12-6"><a href="#cb12-6"></a>start.time <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
@@ -369,9 +369,9 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
 <span id="cb20-2"><a href="#cb20-2"></a></span>
-<span id="cb20-3"><a href="#cb20-3"></a>epsilon <span class="ot">&lt;-</span> <span class="fl">1.68</span> <span class="co"># After some trial ad error</span></span>
+<span id="cb20-3"><a href="#cb20-3"></a>epsilon <span class="ot">&lt;-</span> <span class="fl">1.68</span> <span class="co"># After some trial and error</span></span>
 <span id="cb20-4"><a href="#cb20-4"></a></span>
-<span id="cb20-5"><a href="#cb20-5"></a><span class="co"># Covariance matrix is selected via laplace approximation</span></span>
+<span id="cb20-5"><a href="#cb20-5"></a><span class="co"># Covariance matrix is selected via Laplace approximation</span></span>
 <span id="cb20-6"><a href="#cb20-6"></a>fit_logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> X <span class="sc">-</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span>
 <span id="cb20-7"><a href="#cb20-7"></a>S <span class="ot">&lt;-</span> <span class="fu">vcov</span>(fit_logit)</span>
 <span id="cb20-8"><a href="#cb20-8"></a></span>
@@ -417,7 +417,7 @@ window.Quarto = {
 </section>
 <section id="hamiltonian-monte-carlo" class="level2">
 <h2 class="anchored" data-anchor-id="hamiltonian-monte-carlo">Hamiltonian Monte Carlo</h2>
-<p>The following <code>HMC</code> function is an implementation of Hamiltonian Monte Carlo for a general parametric model. As before, the object <code>S</code> represents a pre-conditioning matrix. This code is an adaptation of the one written by <a href="https://www.mcmchandbook.net/HandbookChapter5.pdf"><strong>Neal (2011)</strong></a>.</p>
+<p>The following <code>HMC</code> function implements Hamiltonian Monte Carlo for a general parametric model. As before, the object <code>S</code> represents a pre-conditioning matrix. This code is an adaptation of the one written by <a href="https://www.mcmchandbook.net/HandbookChapter5.pdf"><strong>Neal (2011)</strong></a>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>HMC <span class="ot">&lt;-</span> <span class="cf">function</span>(R, burn_in, y, X, epsilon, S, <span class="at">L =</span> <span class="dv">10</span>) {</span>
 <span id="cb27-2"><a href="#cb27-2"></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
@@ -440,20 +440,20 @@ window.Quarto = {
 <span id="cb27-19"><a href="#cb27-19"></a>    <span class="cf">for</span> (l <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>L) {</span>
 <span id="cb27-20"><a href="#cb27-20"></a>      <span class="co"># Make a full step for the position</span></span>
 <span id="cb27-21"><a href="#cb27-21"></a>      beta_new <span class="ot">&lt;-</span> beta_new <span class="sc">+</span> epsilon <span class="sc">*</span> <span class="fu">c</span>(S <span class="sc">%*%</span> Pnew)</span>
-<span id="cb27-22"><a href="#cb27-22"></a>      <span class="co"># Make a full step for the momentum, except at end of trajectory</span></span>
+<span id="cb27-22"><a href="#cb27-22"></a>      <span class="co"># Make a full step for the momentum, except at the end of the trajectory</span></span>
 <span id="cb27-23"><a href="#cb27-23"></a>      <span class="cf">if</span> (l <span class="sc">!=</span> L) Pnew <span class="ot">&lt;-</span> Pnew <span class="sc">+</span> epsilon <span class="sc">*</span> <span class="fu">lgradient</span>(beta_new, y, X)</span>
 <span id="cb27-24"><a href="#cb27-24"></a>    }</span>
 <span id="cb27-25"><a href="#cb27-25"></a>    <span class="co"># Make a half step for momentum at the end.</span></span>
 <span id="cb27-26"><a href="#cb27-26"></a>    Pnew <span class="ot">&lt;-</span> Pnew <span class="sc">+</span> epsilon <span class="sc">*</span> <span class="fu">lgradient</span>(beta_new, y, X) <span class="sc">/</span> <span class="dv">2</span></span>
 <span id="cb27-27"><a href="#cb27-27"></a></span>
-<span id="cb27-28"><a href="#cb27-28"></a>    <span class="co"># Negate momentum at end of trajectory to make the proposal symmetric</span></span>
+<span id="cb27-28"><a href="#cb27-28"></a>    <span class="co"># Negate momentum at the end of the trajectory to make the proposal symmetric</span></span>
 <span id="cb27-29"><a href="#cb27-29"></a>    Pnew <span class="ot">&lt;-</span> <span class="sc">-</span> Pnew</span>
 <span id="cb27-30"><a href="#cb27-30"></a></span>
-<span id="cb27-31"><a href="#cb27-31"></a>    <span class="co"># Evaluate potential and kinetic energies at the end of trajectory</span></span>
+<span id="cb27-31"><a href="#cb27-31"></a>    <span class="co"># Evaluate potential and kinetic energies at the end of the trajectory</span></span>
 <span id="cb27-32"><a href="#cb27-32"></a>    logpnew <span class="ot">&lt;-</span> <span class="fu">logpost</span>(beta_new, y, X)</span>
 <span id="cb27-33"><a href="#cb27-33"></a>    logKnew <span class="ot">&lt;-</span> Pnew <span class="sc">%*%</span> S <span class="sc">%*%</span> Pnew <span class="sc">/</span> <span class="dv">2</span> </span>
 <span id="cb27-34"><a href="#cb27-34"></a></span>
-<span id="cb27-35"><a href="#cb27-35"></a>    <span class="co"># Accept or reject the state at end of trajectory, returning either</span></span>
+<span id="cb27-35"><a href="#cb27-35"></a>    <span class="co"># Accept or reject the state at the end of the trajectory, returning either</span></span>
 <span id="cb27-36"><a href="#cb27-36"></a>    <span class="co"># the position at the end of the trajectory or the initial position</span></span>
 <span id="cb27-37"><a href="#cb27-37"></a>    <span class="cf">if</span> (<span class="fu">runif</span>(<span class="dv">1</span>) <span class="sc">&lt;</span> <span class="fu">exp</span>(logpnew <span class="sc">-</span> logp <span class="sc">+</span> logK <span class="sc">-</span> logKnew)) {</span>
 <span id="cb27-38"><a href="#cb27-38"></a>      logp <span class="ot">&lt;-</span> logpnew</span>
@@ -468,14 +468,14 @@ window.Quarto = {
 <span id="cb27-47"><a href="#cb27-47"></a>  out</span>
 <span id="cb27-48"><a href="#cb27-48"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We run the <code>HMC</code> using the usual Fisher information matrix as covariance matrix.</p>
+<p>We run the <code>HMC</code> using the usual Fisher information matrix as a covariance matrix.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
 <span id="cb28-2"><a href="#cb28-2"></a></span>
-<span id="cb28-3"><a href="#cb28-3"></a>epsilon <span class="ot">&lt;-</span> <span class="fl">0.25</span> <span class="co"># After some trial ad error</span></span>
+<span id="cb28-3"><a href="#cb28-3"></a>epsilon <span class="ot">&lt;-</span> <span class="fl">0.25</span> <span class="co"># After some trial and error</span></span>
 <span id="cb28-4"><a href="#cb28-4"></a>L <span class="ot">&lt;-</span> <span class="dv">10</span></span>
 <span id="cb28-5"><a href="#cb28-5"></a></span>
-<span id="cb28-6"><a href="#cb28-6"></a><span class="co"># Covariance matrix is selected via laplace approximation</span></span>
+<span id="cb28-6"><a href="#cb28-6"></a><span class="co"># Covariance matrix is selected via Laplace approximation</span></span>
 <span id="cb28-7"><a href="#cb28-7"></a>fit_logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> X <span class="sc">-</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span>
 <span id="cb28-8"><a href="#cb28-8"></a>S <span class="ot">&lt;-</span> <span class="fu">vcov</span>(fit_logit)</span>
 <span id="cb28-9"><a href="#cb28-9"></a></span>
@@ -521,7 +521,7 @@ window.Quarto = {
 </section>
 <section id="hamiltonian-monte-carlo-stan" class="level2">
 <h2 class="anchored" data-anchor-id="hamiltonian-monte-carlo-stan">Hamiltonian Monte Carlo (Stan)</h2>
-<p>For the sake of completeness, we also present the results obtained using the <strong>Stan</strong> software, which must be installed alongside the <code>rstan</code> R package. The <a href="logistic.stan"><code>logistic.stan</code></a> is available in this repository. The following chunk of code compile the model in C++.</p>
+<p>For the sake of completeness, we also present the results obtained using the <strong>Stan</strong> software, which must be installed alongside the <code>rstan</code> R package. The <a href="logistic.stan"><code>logistic.stan</code></a> is available in this repository. The following chunk of code compiles the model in C++.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a><span class="fu">library</span>(rstan)</span>
 <span id="cb35-2"><a href="#cb35-2"></a></span>
@@ -608,7 +608,7 @@ Chain 1: </code></pre>
 </section>
 <section id="pólya-gamma-data-augmentation" class="level2">
 <h2 class="anchored" data-anchor-id="pólya-gamma-data-augmentation">Pólya-gamma data-augmentation</h2>
-<p>The Pólya-gamma data-augmentation is described in the paper <a href="https://www.tandfonline.com/doi/full/10.1080/01621459.2013.829001">Polson, N. G., Scott, J. G. and Windle J. (2013)</a>. The simulation of the Pólya-gamma random variables is handled by the function <code>rpg.devroye</code> within the <code>BayesLogit</code> R package.</p>
+<p>The Pólya-gamma data augmentation is described in the paper <a href="https://www.tandfonline.com/doi/full/10.1080/01621459.2013.829001">Polson, N. G., Scott, J. G. and Windle J. (2013)</a>. The simulation of the Pólya-gamma random variables is handled by the function <code>rpg.devroye</code> within the <code>BayesLogit</code> R package.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a><span class="fu">library</span>(BayesLogit)</span>
 <span id="cb45-2"><a href="#cb45-2"></a></span>
@@ -699,7 +699,7 @@ Chain 1: </code></pre>
 </section>
 <section id="results" class="level2">
 <h2 class="anchored" data-anchor-id="results">Results</h2>
-<p>The summary statistics of all the above algorithm are reported in the table below.</p>
+<p>The above algorithm’s summary statistics are reported in the table below.</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
