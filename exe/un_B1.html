@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.433">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -23,7 +23,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -87,6 +87,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </script>
   <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
 
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
 </head>
 
 <body>
@@ -97,7 +124,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-pima-indian-dataset" id="toc-the-pima-indian-dataset" class="nav-link active" data-scroll-target="#the-pima-indian-dataset">The Pima indian dataset</a></li>
+  <li><a href="#the-pima-indian-dataset" id="toc-the-pima-indian-dataset" class="nav-link active" data-scroll-target="#the-pima-indian-dataset">The Pima Indian dataset</a></li>
   <li><a href="#metropolis-hastings" id="toc-metropolis-hastings" class="nav-link" data-scroll-target="#metropolis-hastings">Metropolis-Hastings</a>
   <ul class="collapse">
   <li><a href="#laplace-approximation" id="toc-laplace-approximation" class="nav-link" data-scroll-target="#laplace-approximation">Laplace approximation</a></li>
@@ -118,21 +145,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 
 
-<div class="quarto-title-meta-author">
+<div class="quarto-title-meta-author column-page-left">
   <div class="quarto-title-meta-heading">Author</div>
   <div class="quarto-title-meta-heading">Affiliation</div>
   
     <div class="quarto-title-meta-contents">
     <p class="author">Tommaso Rigon </p>
   </div>
-    <div class="quarto-title-meta-contents">
+  <div class="quarto-title-meta-contents">
         <p class="affiliation">
             DEMS
           </p>
       </div>
-    </div>
+  </div>
 
-<div class="quarto-title-meta">
+<div class="quarto-title-meta column-page-left">
 
       
   
@@ -140,20 +167,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </div>
   
 
+
 </header>
 
-<p>In this unit we discuss several (adaptive) MCMC strategies that have been presented in the <a href="../slides/un_B1.pdf"><strong>slides of unit B.1</strong></a>. We will implement these proposals using the “famous” <strong>Pima indian dataset</strong>. The purpose of this unit is mainly presenting the implementation of the various MCMC algorithms and not making “inference” about their general performance. Refer to the nice paper by <a href="https://projecteuclid.org/journals/statistical-science/volume-32/issue-1/Leave-Pima-Indians-Alone--Binary-Regression-as-a-Benchmark/10.1214/16-STS581.full">Chopin &amp; Ridgway (2017)</a> for a more comprehensive discussion on this aspect.</p>
+
+<p>In this unit, we discuss several (adaptive) MCMC strategies that have been presented in the <a href="../slides/un_B1.pdf"><strong>slides of unit B.1</strong></a>. We will implement these proposals using the “famous” <strong>Pima Indian dataset</strong>. The purpose of this unit is mainly to present the implementation of the various MCMC algorithms and not make “inferences” about their general performance. Refer to the excellent paper by <a href="https://projecteuclid.org/journals/statistical-science/volume-32/issue-1/Leave-Pima-Indians-Alone--Binary-Regression-as-a-Benchmark/10.1214/16-STS581.full">Chopin &amp; Ridgway (2017)</a> for a more comprehensive discussion on this aspect.</p>
 <section id="the-pima-indian-dataset" class="level2">
-<h2 class="anchored" data-anchor-id="the-pima-indian-dataset">The Pima indian dataset</h2>
-<p>In first place, let us load the <code>Pima.tr</code> and <code>Pima.te</code> datasets which are available in the <code>MASS</code> R package. As described in the documentation, this dataset includes:</p>
+<h2 class="anchored" data-anchor-id="the-pima-indian-dataset">The Pima Indian dataset</h2>
+<p>First, let us load the <code>Pima.tr</code> and <code>Pima.te</code> datasets available in the <code>MASS</code> R package. As described in the documentation, this dataset includes:</p>
 <blockquote class="blockquote">
-<p>A population of women who were at least 21 years old, of Pima Indian heritage and living near Phoenix, Arizona, was tested for diabetes according to World Health Organization criteria. The data were collected by the US National Institute of Diabetes and Digestive and Kidney Diseases. We used the 532 complete records after dropping the (mainly missing) data on serum insulin.</p>
+<p>A population of women who were at least 21 years old, of Pima Indian heritage, and living near Phoenix, Arizona, was tested for diabetes according to World Health Organization criteria. The data were collected by the US National Institute of Diabetes and Digestive and Kidney Diseases. We used the 532 complete records after dropping the (mainly missing) data on serum insulin.</p>
 </blockquote>
 <p>See also the documentation of the <code>Pima.tr</code> and <code>Pima.te</code> datasets for a more comprehensive description of the involved variables. Firstly, we combine the training and test dataset into a single <code>data.frame</code> as follows:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>Pima <span class="ot">&lt;-</span> <span class="fu">rbind</span>(MASS<span class="sc">::</span>Pima.tr, MASS<span class="sc">::</span>Pima.te)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We are interested in modeling the probability of being diabetic (variable <code>type</code>) as a function of the covariates. We also <strong>standardize the predictors</strong>, because this usually improves the mixing, see <a href="https://projecteuclid.org/journals/annals-of-applied-statistics/volume-2/issue-4/A-weakly-informative-default-prior-distribution/10.1214/08-AOAS191.full">Gelman et al.&nbsp;( 2008)</a>. As an <strong>exercise</strong> you can repeat the whole analysis using the original data.</p>
+<p>We are interested in modeling the probability of being diabetic (variable <code>type</code>) as a function of the covariates. We also <strong>standardize the predictors</strong> because this usually improves the mixing; see <a href="https://projecteuclid.org/journals/annals-of-applied-statistics/volume-2/issue-4/A-weakly-informative-default-prior-distribution/10.1214/08-AOAS191.full">Gelman et al.&nbsp;( 2008)</a>. As an <strong>exercise</strong> you can repeat the whole analysis using the original data.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>y <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(Pima<span class="sc">$</span>type <span class="sc">==</span> <span class="st">"Yes"</span>) <span class="co"># Binary outcome</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a>X <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(type <span class="sc">~</span> . <span class="sc">-</span> <span class="dv">1</span>, <span class="at">data =</span> Pima) <span class="co"># Design matrix</span></span>
@@ -169,10 +198,10 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <span id="cb3-3"><a href="#cb3-3"></a><span class="co"># Logit model</span></span>
 <span id="cb3-4"><a href="#cb3-4"></a>fit_logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(type <span class="sc">~</span> X <span class="sc">-</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> Pima)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The focus of this presentation is on the computational aspects, so we will employ a relatively <strong>vague prior</strong> centered at <span class="math inline">0</span>, namely</p>
+<p>The focus of this presentation is on the computational aspects so that we will employ a relatively <strong>vague prior</strong> centered at <span class="math inline">0</span>, namely</p>
 <p><span class="math display">\beta \sim N(0, 100 I_p).</span></p>
-<p>The reader should be aware that much better prior specification exist; see for example <a href="https://projecteuclid.org/journals/annals-of-applied-statistics/volume-2/issue-4/A-weakly-informative-default-prior-distribution/10.1214/08-AOAS191.full">Gelman et al.&nbsp;( 2008)</a>.</p>
-<p>We now turn to the implementation of some basic quantity. In first place, we code the log-likelihood and the log-posterior functions. We consider here the <strong>logistic</strong> case.</p>
+<p>The reader should be aware that much better prior specifications exist; see, for example <a href="https://projecteuclid.org/journals/annals-of-applied-statistics/volume-2/issue-4/A-weakly-informative-default-prior-distribution/10.1214/08-AOAS191.full">Gelman et al.&nbsp;( 2008)</a>.</p>
+<p>We now turn to the implementation of some fundamental quantity. In the first place, we code the log-likelihood and the log-posterior functions. Here, we consider the <strong>logistic</strong> case.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co"># Loglikelihood of a logistic regression model</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a>loglik <span class="ot">&lt;-</span> <span class="cf">function</span>(beta, y, X) {</span>
@@ -188,9 +217,9 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 </section>
 <section id="metropolis-hastings" class="level2">
 <h2 class="anchored" data-anchor-id="metropolis-hastings">Metropolis-Hastings</h2>
-<p>The first algorithm we consider is a vanilla <strong>Metropolis-Hastings</strong> algorithm. Below we propose a relatively efficient implementation, which is very similar to the one employed in the <a href="un_A1.html"><strong>Markdown of unit A.1</strong></a>, with the obvious modifications.</p>
-<div class="cell" data-hash="un_B1_cache/html/unnamed-chunk-5_86e96e4a02dc777b2e6bb0ec4f722a8e">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># R represent the number of samples</span></span>
+<p>The first algorithm we consider is a vanilla <strong>Metropolis-Hastings</strong> algorithm. Below, we propose a relatively efficient implementation similar to the one employed in the <a href="un_A1.html"><strong>Markdown of unit A.1</strong></a>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># R represents the number of samples</span></span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="co"># burn_in is the number of discarded samples</span></span>
 <span id="cb5-3"><a href="#cb5-3"></a><span class="co"># S is the covariance matrix of the multivariate Gaussian proposal</span></span>
 <span id="cb5-4"><a href="#cb5-4"></a>RMH <span class="ot">&lt;-</span> <span class="cf">function</span>(R, burn_in, y, X, S) {</span>
@@ -220,7 +249,7 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <span id="cb5-28"><a href="#cb5-28"></a>  out</span>
 <span id="cb5-29"><a href="#cb5-29"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We sample <code>R = 30000</code> values after a burn-in period of <code>30000</code> draws, for a total of <code>60000</code> iterations. The performance of the algorithm (effective sample size) are stored in the <code>summary_tab</code> object. In this unit we will consider <span class="math inline">5</span> different MCMC algorithms, and we store their name as well.</p>
+<p>We sample <code>R = 30000</code> values after a burn-in period of <code>30000</code> draws for a total of <code>60000</code> iterations. The algorithm’s performance (effective sample size) is stored in the <code>summary_tab</code> object. In this unit, we will consider <span class="math inline">5</span> different MCMC algorithms and store their name as well.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">library</span>(coda)</span>
 <span id="cb6-2"><a href="#cb6-2"></a>R <span class="ot">&lt;-</span> <span class="dv">30000</span> <span class="co"># Number of retained samples</span></span>
@@ -231,8 +260,8 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <span id="cb6-7"><a href="#cb6-7"></a><span class="fu">colnames</span>(summary_tab) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Seconds"</span>, <span class="st">"Average ESS"</span>, <span class="st">"Average ESS per sec"</span>, <span class="st">"Average acceptance rate"</span>)</span>
 <span id="cb6-8"><a href="#cb6-8"></a><span class="fu">rownames</span>(summary_tab) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Vanilla MH"</span>, <span class="st">"Laplace MH"</span>, <span class="st">"Adaptive MH"</span>, <span class="st">"Metropolis within Gibbs"</span>, <span class="st">"Adaptive Metropolis within Gibbs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>In order to run the algorithm, we need to specify the <strong>covariance matrix</strong> <code>S</code> of the proposal distribution. In the absence of some sensible suggestion, we initially try <span class="math inline">S = \text{diag}(10^{-3},\dots,10^{-3})</span>. This could (and will) be an poor choice, leading to a highly autocorrelated chain. We will explore alternative specifications for <code>S</code> later on. The final result is decent, but the mixing can be certainly improved.</p>
-<div class="cell" data-hash="un_B1_cache/html/unnamed-chunk-7_340f62e092d2468cc0a615b840825c8c">
+<p>To run the algorithm, we need to specify the proposal distribution’s <strong>covariance matrix</strong> <code>S</code>. In the absence of some sensible suggestion, we initially try <span class="math inline">S = \text{diag}(10^{-3},\dots,10^{-3})</span>. This could (and will) be a poor choice, leading to a highly autocorrelated chain. We will explore alternative specifications for <code>S</code> later on. The final result is decent, but the mixing can undoubtedly be improved.</p>
+<div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
 <span id="cb7-2"><a href="#cb7-2"></a></span>
 <span id="cb7-3"><a href="#cb7-3"></a><span class="co"># Covariance matrix of the proposal</span></span>
@@ -270,19 +299,23 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <span id="cb13-8"><a href="#cb13-8"></a><span class="co"># Traceplot of a couple of parameters</span></span>
 <span id="cb13-9"><a href="#cb13-9"></a><span class="fu">plot</span>(fit_MCMC[, <span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_B1_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_B1_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 <section id="laplace-approximation" class="level3">
 <h3 class="anchored" data-anchor-id="laplace-approximation">Laplace approximation</h3>
-<p>As suggested, among many others, by <a href="https://www.tandfonline.com/doi/abs/10.1198/jcgs.2009.06134">Roberts and Rosenthal (2009)</a>, the <strong>asymptotically optimal</strong> covariance matrix <code>S</code> is equal to <span class="math inline">2.38^2 \Sigma / p</span>, where <span class="math inline">\Sigma</span> is the unknown covariance matrix of the posterior distribution. In this second approach, we obtain a rough estimate of <span class="math inline">\Sigma</span> using a <strong>quadratic approximation</strong> of the likelihood function. In the logistic case, this can be easily obtained with the <code>vcov</code> built-in R function.</p>
+<p>As suggested, among many others, by <a href="https://www.tandfonline.com/doi/abs/10.1198/jcgs.2009.06134">Roberts and Rosenthal (2009)</a>, the <strong>asymptotically optimal</strong> covariance matrix <code>S</code> is equal to <span class="math inline">2.38^2 \Sigma / p</span>, where <span class="math inline">\Sigma</span> is the unknown covariance matrix of the posterior distribution. In this second approach, we obtain a rough estimate of <span class="math inline">\Sigma</span> using a <strong>quadratic approximation</strong> of the likelihood function. This can be easily obtained in the logistic case with the <code>vcov</code> built-in R function.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
 <span id="cb14-2"><a href="#cb14-2"></a></span>
 <span id="cb14-3"><a href="#cb14-3"></a><span class="co"># Running the MCMC</span></span>
 <span id="cb14-4"><a href="#cb14-4"></a>start.time <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
 <span id="cb14-5"><a href="#cb14-5"></a></span>
-<span id="cb14-6"><a href="#cb14-6"></a><span class="co"># Covariance matrix is selected via laplace approximation</span></span>
+<span id="cb14-6"><a href="#cb14-6"></a><span class="co"># Covariance matrix is selected via Laplace approximation</span></span>
 <span id="cb14-7"><a href="#cb14-7"></a>fit_logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(type <span class="sc">~</span> X <span class="sc">-</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> Pima)</span>
 <span id="cb14-8"><a href="#cb14-8"></a>p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
 <span id="cb14-9"><a href="#cb14-9"></a>S <span class="ot">&lt;-</span> <span class="fl">2.38</span><span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> <span class="fu">vcov</span>(fit_logit) <span class="sc">/</span> p</span>
@@ -318,22 +351,26 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <span id="cb20-8"><a href="#cb20-8"></a><span class="co"># Traceplot of the intercept</span></span>
 <span id="cb20-9"><a href="#cb20-9"></a><span class="fu">plot</span>(fit_MCMC[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_B1_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_B1_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 </section>
 <section id="adaptive-metropolis-hastings" class="level2">
 <h2 class="anchored" data-anchor-id="adaptive-metropolis-hastings">Adaptive Metropolis-Hastings</h2>
-<p>We consider here a version of the <strong>Adaptive Metropolis (AM)</strong> algorithm of <a href="https://projecteuclid.org/journals/bernoulli/volume-7/issue-2/An-adaptive-Metropolis-algorithm/bj/1080222083.full">Haario, Saksman, and Tamminem (2001)</a>. The algorithm proceeds as in the standard Metropolis algorithm, but the covariance matrix of the proposal is updated at each iteration.</p>
+<p>We consider here a version of the <strong>Adaptive Metropolis (AM)</strong> algorithm of <a href="https://projecteuclid.org/journals/bernoulli/volume-7/issue-2/An-adaptive-Metropolis-algorithm/bj/1080222083.full">Haario, Saksman, and Tamminem (2001)</a>. The algorithm proceeds as in the standard Metropolis algorithm. However, the covariance matrix of the proposal is updated at each iteration.</p>
 <p>We use the following (adaptive) proposal distribution:</p>
 <p><span class="math display">q_r({\bf \beta}^* \mid {\bf \beta}) \sim N({\bf \beta}, \:2.38^2 / p \: \Sigma_r + \epsilon  I_p),</span></p>
-<p>where <span class="math inline">\Sigma_r</span> is the covariance matrix of the previously <span class="math inline">r</span> sampled values <span class="math inline">\beta^{(1)},\dots,\beta^{(r)}</span> and <span class="math inline">\epsilon &gt; 0</span> is some small value that avoid degeneracies (i.e.&nbsp;the matrix <span class="math inline">\Sigma_r</span> must be invertible). Here, we will use <span class="math inline">\epsilon = 10^{-6}</span>. Moreover, note that the following <strong>recursive formula</strong> holds true: <span class="math display">
+<p>where <span class="math inline">\Sigma_r</span> is the covariance matrix of the previously <span class="math inline">r</span> sampled values <span class="math inline">\beta^{(1)},\dots,\beta^{(r)}</span> and <span class="math inline">\epsilon &gt; 0</span> is some small value that avoids degeneracies (i.e., the matrix <span class="math inline">\Sigma_r</span> must be invertible). We will use <span class="math inline">\epsilon = 10^{-6}</span>. Moreover, note that the following <strong>recursive formula</strong> holds true: <span class="math display">
 \Sigma_r = \frac{1}{r - 1}\sum_{j=1}^r(\beta^{(j)} - \bar{\beta}^{(r)})(\beta^{(j)} - \bar{\beta}^{(r)})^\intercal = \frac{r - 2}{r - 1}\Sigma_{r-1} + \frac{1}{r}(\beta^{(r)} - \bar{\beta}^{(r-1)})(\beta^{(r)} - \bar{\beta}^{(r-1)})^\intercal.
 </span></p>
 <p>where <span class="math inline">\bar{\beta}^{(r)} = (r - 1)/r \bar{\beta}^{(r-1)} + \beta^{(r)} / r</span> is the arithmetic means of the first <span class="math inline">r</span> sampled values. This facilitates the computation of <span class="math inline">\Sigma_r</span>. The code for this AM algorithm is given in the following chunk.</p>
-<div class="cell" data-hash="un_B1_cache/html/unnamed-chunk-9_010f1eb46078df773fb533a132b54724">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># R represent the number of samples</span></span>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># R represents the number of samples</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="co"># burn_in is the number of discarded samples</span></span>
 <span id="cb21-3"><a href="#cb21-3"></a><span class="co"># S is the covariance matrix of the multivariate Gaussian proposal</span></span>
 <span id="cb21-4"><a href="#cb21-4"></a>RMH_Adaptive <span class="ot">&lt;-</span> <span class="cf">function</span>(R, burn_in, y, X) {</span>
@@ -377,7 +414,7 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <span id="cb21-42"><a href="#cb21-42"></a>  out</span>
 <span id="cb21-43"><a href="#cb21-43"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="un_B1_cache/html/unnamed-chunk-10_91eee71905c4c2f42388e649ac405185">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
 <span id="cb22-2"><a href="#cb22-2"></a></span>
 <span id="cb22-3"><a href="#cb22-3"></a><span class="co"># Running the MCMC</span></span>
@@ -413,13 +450,17 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <span id="cb28-8"><a href="#cb28-8"></a><span class="co"># Traceplot of the intercept</span></span>
 <span id="cb28-9"><a href="#cb28-9"></a><span class="fu">plot</span>(fit_MCMC[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_B1_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_B1_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="metropolis-within-gibbs" class="level2">
 <h2 class="anchored" data-anchor-id="metropolis-within-gibbs">Metropolis within Gibbs</h2>
-<p>We now consider a <strong>Metropolis within Gibbs</strong> strategy. The object <code>se</code> include the standard errors of the proposals for each parameter. The default choice</p>
+<p>We now consider a <strong>Metropolis within Gibbs</strong> strategy. The object <code>se</code> includes the proposals’ standard errors for each parameter. The default choice</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>RMH_Gibbs <span class="ot">&lt;-</span> <span class="cf">function</span>(R, burn_in, y, X, se) {</span>
 <span id="cb29-2"><a href="#cb29-2"></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
@@ -446,7 +487,7 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <span id="cb29-23"><a href="#cb29-23"></a>  out</span>
 <span id="cb29-24"><a href="#cb29-24"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="un_B1_cache/html/unnamed-chunk-12_616168cc513223727a393581f07ec862">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
 <span id="cb30-2"><a href="#cb30-2"></a>se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">rep</span>(<span class="fl">1e-4</span>, p))</span>
 <span id="cb30-3"><a href="#cb30-3"></a></span>
@@ -484,14 +525,18 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <span id="cb36-8"><a href="#cb36-8"></a><span class="co"># Traceplot of the intercept</span></span>
 <span id="cb36-9"><a href="#cb36-9"></a><span class="fu">plot</span>(fit_MCMC[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_B1_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_B1_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="adaptive-metropolis-within-gibbs" class="level2">
 <h2 class="anchored" data-anchor-id="adaptive-metropolis-within-gibbs">Adaptive Metropolis within Gibbs</h2>
 <p>Finally, we consider here the <strong>Adaptive Metropolis within Gibbs</strong> algorithm of <a href="https://www.tandfonline.com/doi/abs/10.1198/jcgs.2009.06134">Roberts and Rosenthal (2009)</a>. The algorithm proceeds as in the standard Metropolis within Gibbs algorithm, but the standard errors of the proposal are updated at each iteration.</p>
-<p>Every <span class="math inline">50</span> iterations, the algorithm increases or decreases the standard errors <code>se</code> according to the acceptance rate. As a rule of thumb, the “optimal” acceptance rate is about <span class="math inline">0.44</span> in the Metropolis within Gibbs case.</p>
+<p>Every <span class="math inline">50</span> iterations the algorithm increases or decreases the standard errors <code>se</code> according to the acceptance rate. As a rule of thumb, the “optimal” acceptance rate is about <span class="math inline">0.44</span> in the Metropolis within Gibbs case.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a>RMH_Gibbs_Adaptive <span class="ot">&lt;-</span> <span class="cf">function</span>(R, burn_in, y, X, <span class="at">target =</span> <span class="fl">0.44</span>) {</span>
 <span id="cb37-2"><a href="#cb37-2"></a>  </span>
@@ -543,7 +588,7 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <span id="cb37-48"><a href="#cb37-48"></a>  out</span>
 <span id="cb37-49"><a href="#cb37-49"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="un_B1_cache/html/unnamed-chunk-14_0d4f6559a007715d453bc6830cc38193">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
 <span id="cb38-2"><a href="#cb38-2"></a><span class="co"># Running the MCMC</span></span>
 <span id="cb38-3"><a href="#cb38-3"></a>start.time <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
@@ -576,13 +621,17 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <span id="cb44-8"><a href="#cb44-8"></a><span class="co"># Traceplot of the intercept</span></span>
 <span id="cb44-9"><a href="#cb44-9"></a><span class="fu">plot</span>(fit_MCMC[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="un_B1_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="1750"></p>
+<div>
+<figure class="figure">
+<p><img src="un_B1_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="1750"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="summary-statistics" class="level2">
 <h2 class="anchored" data-anchor-id="summary-statistics">Summary statistics</h2>
-<p>The summary statistics of all the above algorithm are reported in the table below.</p>
+<p>The above algorithm’s summary statistics are reported in the table below.</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
@@ -605,37 +654,37 @@ y_i \mid \pi_i \overset{\text{ind}}{\sim} \text{Bern}(\pi_i), \qquad \pi_i = g(\
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Vanilla MH</td>
-<td style="text-align: right;">0.96</td>
+<td style="text-align: right;">0.97</td>
 <td style="text-align: right;">259.58</td>
-<td style="text-align: right;">269.41</td>
+<td style="text-align: right;">266.91</td>
 <td style="text-align: right;">0.72</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Laplace MH</td>
-<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">1.00</td>
 <td style="text-align: right;">1185.77</td>
-<td style="text-align: right;">1214.64</td>
+<td style="text-align: right;">1190.99</td>
 <td style="text-align: right;">0.27</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Adaptive MH</td>
-<td style="text-align: right;">2.13</td>
+<td style="text-align: right;">2.31</td>
 <td style="text-align: right;">1129.64</td>
-<td style="text-align: right;">530.07</td>
+<td style="text-align: right;">488.63</td>
 <td style="text-align: right;">0.21</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Metropolis within Gibbs</td>
-<td style="text-align: right;">6.58</td>
+<td style="text-align: right;">6.65</td>
 <td style="text-align: right;">37.57</td>
-<td style="text-align: right;">5.71</td>
+<td style="text-align: right;">5.65</td>
 <td style="text-align: right;">0.97</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Adaptive Metropolis within Gibbs</td>
-<td style="text-align: right;">6.58</td>
+<td style="text-align: right;">6.65</td>
 <td style="text-align: right;">1009.32</td>
-<td style="text-align: right;">153.28</td>
+<td style="text-align: right;">151.81</td>
 <td style="text-align: right;">0.45</td>
 </tr>
 </tbody>
@@ -725,10 +774,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -738,8 +786,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -752,6 +809,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -795,6 +971,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -820,6 +997,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -880,6 +1083,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 
