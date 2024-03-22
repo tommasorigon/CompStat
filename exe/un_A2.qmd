@@ -30,33 +30,33 @@ editor_options:
 
 The `Rcpp` **R** package simplifies the interface between **R** and C++. The main advantage is that C++ code is usually faster than **R**, especially in non-vectorized settings. 
 
-The official website of `Rcpp` is [http://www.rcpp.org](http://www.rcpp.org), but you can find a large amount of tutorials and examples online. An important and useful read is
+The official website of `Rcpp` is [http://www.rcpp.org](http://www.rcpp.org), but you can find many tutorials and examples online. An important and valuable read is
 
 - Eddelbuettel, D. and Balamuta, J. J. (2018).Extending R with C++: A Brief Introduction to Rcpp. *The American Statistician*, **72**(1), 28--36.
 
-This paper is highly recommended as it provides further documentation, examples and discusses the "philosophy" behind `Rcpp`.
+This paper is highly recommended as it provides further documentation and examples and discusses the "philosophy" behind `Rcpp`.
 
 ### RcppArmadillo
 
 The package `RcppArmadillo` is an extension of `Rcpp` designed for highly efficient **linear algebra**. 
 
-As described in the official documentation (http://arma.sourceforge.net), Armadillo is a "high quality linear algebra library (matrix maths) for the C++ language, aiming towards a good balance between speed and ease of use".
+As described in the official documentation (http://arma.sourceforge.net), Armadillo is a "high-quality linear algebra library (matrix maths) for the C++ language, aiming towards a good balance between speed and ease of use."
 
 The syntax is deliberately similar to that of Matlab and **R**.
 
 ## Installation
 
-In first place, you **need a C++ compiler**. For `RcppArmadillo` you will also need a **Fortran compiler**.
+In the first place, you **need a C++ compiler**. For `RcppArmadillo`, you will also need a **Fortran compiler**.
 
 If you are a **Windows user**, you just need to install [Rtools](https://cran.r-project.org/bin/windows/Rtools/), as described here:
 
 - <https://thecoatlessprofessor.com/programming/cpp/installing-rtools-for-compiled-code-via-rcpp/>
 
-If you are a **Mac Os user**, unfortunately the procedure is slightly more complicate. You can refer to:
+Unfortunately, if you are a **Mac OS user**, the procedure is slightly more complicated. You can refer to:
 
 - <https://thecoatlessprofessor.com/programming/cpp/r-compiler-tools-for-rcpp-on-macos/>
 
-If you are a **Linux user**, you probably already know what to do. In any event, this is the easieast case as you just need to run the following commands
+If you are a Linux user, you probably already know what to do. In any event, this is the most straightforward case, as you need to run the following commands
 
 ```{bash, eval=F}
 # RHEL/CentOS
@@ -68,30 +68,30 @@ sudo apt-get update
 sudo apt-get install r-base r-base-dev
 ```
 
-Finally, the **R** packages `Rcpp` and `RcppArmadillo` can be installed in the usual manner, i.e. using `install.packages("Rcpp")` and `install.packages("RcppArmadillo")`. 
+Finally, the **R** packages `Rcpp` and `RcppArmadillo` can be installed in the usual manner, i.e., using `install.packages("Rcpp")` and `install.packages("RcppArmadillo")`. 
 
 ## Basic examples
 
 ### Verifying the installation and basic usage
 
-In first place, let us load the **R** packages into memory.
+First, let us load the **R** packages into memory.
 
 ```{r}
 library(Rcpp)
 library(RcppArmadillo)
 ```
 
-In order to write a C++ function, we need to perform the following step
+To write a C++ function, we need to perform the following steps:
 
-1. Create an empty file, say `file.cpp`, which will contain the C++ code. If you are using **Rstudio**, you can create it from File --> New file. 
+1. Create an empty file, say `file.cpp`, containing the C++ code. If you use **Rstudio**, you can create it from File --> New file. 
 
 2. Save the C++ file and **compile it** using the `sourceCpp` function of the `Rcpp` package. 
 
 3. Use the functions contained in the C++ file within **R**, as usual.
 
-We create a `sum.cpp` file including the function `arma_sum`, which computes the sum of the elements of a vector. You can include multiple functions into a single file, but only those preceeded by `// [[Rcpp::export]]` will be available within **R**. 
+We create a `sum.cpp` file including the function `arma_sum`, which computes the sum of the elements of a vector. You can include multiple functions into a single file, but only those preceded by `// [[Rcpp::export]]` will be available within **R**. 
 
-The C++ code of the `sum.cpp` file is given in the following. Note that we need to **import the Rcpp and RcppArmadillo libraries**.
+The C++ code of the `sum.cpp` file is given below. Note that we need to **import the Rcpp and RcppArmadillo libraries**.
 
 ```{Rcpp}
 #include <RcppArmadillo.h>
@@ -110,10 +110,10 @@ double arma_sum(vec x){
 }
 ```
 
-Then, we can **compile** the `sum.cpp` file with the following command. If you are using **RStudio**, you can also click on the **source button**.
+Then, we can **compile** the `sum.cpp` file with the following command. If you use **RStudio**, click the **source button**.
 
 ```{r}
-# In this case the file is saved in a different folder.
+# In this case, the file is saved in a different folder.
 # Obviously, you need to change the PATH as needed
 sourceCpp("../cpp/sum.cpp")
 ```
@@ -131,9 +131,9 @@ sum(x) # sum of the vector x - usual command
 
 ### Example 1: `rnorm` and `arma_rnorm`
 
-In `Rcpp` is possible to generate random variables. There are some mild differences from the usual **R** implementation, most notably the fact that C++ is usually not vectorized. 
+In `Rcpp`, it is possible to generate random variables. There are some mild differences from the usual **R** implementation, most notably that C++ is usually not vectorized. 
 
-Let us create and compile the `arma_rnorm.cpp` file, whose content is the following.
+Let us create and compile the `arma_rnorm.cpp` file, the content of which is the following.
 
 ```{Rcpp}
 #include <RcppArmadillo.h>
@@ -175,7 +175,7 @@ benchmark(
 
 ### Example 2: euclidean distance
 
-Suppose we are given a matrix ${\bf X}$ of dimension $n \times p$, whose rows are ${\bf x}_i = (x_{i1},\dots,x_{ip})^\intercal$. We are interested in computing the matrix of euclidean distances ${\bf D}$ of dimension $n \times n$, whose entries are equal to
+Suppose we are given a matrix ${\bf X}$ of dimension $n \times p$, whose rows are ${\bf x}_i = (x_{i1},\dots,x_{ip})^\intercal$. We are interested in computing the matrix of Euclidean distances ${\bf D}$ of dimension $n \times n$, whose entries are equal to
 
 $$
 d_{ii'} = \sqrt{\sum_{j=1}^p (x_{ij} - x_{i'j})^2}, \qquad i,i' \in \{1,...,n\}.
@@ -215,7 +215,7 @@ mat arma_dist(const mat& X){
 }
 ```
 
-These two implementations produce the same result. Note that in **R** you could also use the `dist` function. 
+These two implementations produce the same result. Note that in **R**, you could also use the `dist` function. 
 
 ```{r}
 X <- cbind(1:3, c(20, 10, 2))
@@ -240,7 +240,7 @@ benchmark(
 
 ### Example 3: OLS
 
-In this third example, we illustrate the performance of `RcppArmadillo` for fitting linear models. In first place, we implement two functions in **R** that obtain the OLS estimate $\hat{\beta}$ from the design matrix ${\bf X}$ and the response ${ \bf y}$.
+In this third example, we illustrate the performance of `RcppArmadillo` for fitting linear models. In the first place, we implement two functions in **R** that obtain the OLS estimate $\hat{\beta}$ from the design matrix ${\bf X}$ and the response ${ \bf y}$.
 
 ```{r}
 # Using matrix multiplication commands
@@ -254,7 +254,7 @@ lm_coef2 <- function(X, y) {
 }
 ```
 
-In the following, it is described the corresponding `RcppArmadillo` implementation. The linear system is then solved through the `solve` command directly applied on ${\bf X}$ and ${ \bf y}$.
+The following describes the corresponding `RcppArmadillo` implementation. The linear system is then solved through the `solve` command directly applied on ${\bf X}$ and ${ \bf y}$.
 
 ```{Rcpp}
 #include <RcppArmadillo.h>
@@ -269,7 +269,7 @@ vec lm_coef3(const mat& X, const vec& y) {
 }
 ```
 
-The next simulation seems to confirm that the `RcppArmadillo` is faster than naive R implementations, but actually slower than `lm_coef2`. This is expected, as the function `solve` of **R** is itself written in C++. The `lm` **R** command is very slow, but it is actually computing many more quantities than just the OLS estimate. 
+The following simulation confirms that the `RcppArmadillo` is faster than naive R implementations but slower than `lm_coef2`. This is expected, as the function `solve` of **R** is written in C++. The `lm` **R** command is very slow but computes many more quantities than just the OLS estimate. 
 
 ```{r}
 set.seed(123)
@@ -292,7 +292,7 @@ benchmark(R_matrix_inv = lm_coef1(X, y),
 
 ### Gibbs sampling example: Gaussian data
 
-In the next example, we consider a Gibbs sampling implementation for Gaussian data and conditionally conjugate prior. To make things concrete, we consider the `sleep` dataset available in **R**. 
+The following example considers a Gibbs sampling implementation for Gaussian data and conditionally conjugate prior. To make things concrete, we consider the `sleep` dataset available in **R**. 
 
 ```{r}
 data(sleep)
@@ -378,7 +378,7 @@ mat gibbs_arma(vec x, double mu_mu, double sigma2_mu, double a_sigma, double b_s
    // Sample sigma2
     double a_n = a_sigma + 0.5*n;
     double b_n = b_sigma + 0.5 * sum(pow(x - mu,2));
-    // NOTE: rgamma in Rcpp use scale, not rate, as default
+    // NOTE: rgamma in Rcpp uses scale, not rate, as the default
     sigma2 = 1.0 / rgamma(1, a_n, 1.0 / b_n)[0];
   
     if (r > burn_in) {
